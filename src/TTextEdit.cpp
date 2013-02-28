@@ -1280,8 +1280,8 @@ void TTextEdit::mousePressEvent( QMouseEvent * event )
             int yind=y;
             while( xind < static_cast<int>( mpBuffer->buffer[yind].size() ) )
             {
-                QString c = mpBuffer->lineBuffer[yind].at(xind);
-                if (c == " ")
+                QChar c = mpBuffer->lineBuffer[yind].at(xind);
+                if (!c.isLetterOrNumber())
                     break;
                 xind++;
             }
@@ -1289,8 +1289,8 @@ void TTextEdit::mousePressEvent( QMouseEvent * event )
             mPB.setY ( yind );
             for( xind=x-1; xind>0; xind--)
             {
-                QString c = mpBuffer->lineBuffer[yind].at(xind);
-                if (c == " ")
+                QChar c = mpBuffer->lineBuffer[yind].at(xind);
+                if (!c.isLetterOrNumber())
                     break;
             }
             if ( xind > 0)
