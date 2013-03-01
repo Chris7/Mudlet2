@@ -160,7 +160,7 @@ void dlgPackageExporter::slot_export_package(){
                 keyMap[item]->exportItem = false;
             }
         }
-        writer.exportGenericPackage(&file_xml);
+        writer.writeModuleXML(&file_xml,"");
         file_xml.close();
         //now fix all the stuff we weren't exporting
         //trigger, timer, alias,action,script, keys
