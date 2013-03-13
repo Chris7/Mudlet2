@@ -173,7 +173,7 @@ void TriggerUnit::removeTriggerRootNode( TTrigger * pT )
     }
     else
     {
-        mLookupTable.remove( pT->getName() );
+        mTempLookupTable.remove( pT->getName() );
     }
     mTriggerMap.remove( pT->getID() );
     mTriggerRootNodeList.remove( pT );
@@ -186,6 +186,10 @@ TTrigger * TriggerUnit::getTrigger( int id )
     {
         return mTriggerMap.value( id );
     }
+    else if( mTempTriggerMap.find( id ) != mTempTriggerMap.end() )
+    {
+        return mTempTriggerMap.value( id );
+    }
     else
     {
         return 0;
@@ -197,6 +201,10 @@ TTrigger * TriggerUnit::getTriggerPrivate( int id )
     if( mTriggerMap.find( id ) != mTriggerMap.end() )
     {
         return mTriggerMap.value( id );
+    }
+    else if( mTempTriggerMap.find( id ) != mTempTriggerMap.end() )
+    {
+        return mTempTriggerMap.value( id );
     }
     else
     {
@@ -244,8 +252,13 @@ void TriggerUnit::addTrigger( TTrigger * pT )
     {
         pT->setID( getNewID() );
     }
-
-    mTriggerMap.insert( pT->getID(), pT );
+    if ( pT->mIsTempTrigger  )
+    {
+        mTriggerRootNodeList.remove( pT );
+        mTempTriggerMap.insert( pT->getID(), pT );
+    }
+    else
+        mTriggerMap.insert( pT->getID(), pT );
 }
 
 void TriggerUnit::removeTrigger( TTrigger * pT )
@@ -254,11 +267,15 @@ void TriggerUnit::removeTrigger( TTrigger * pT )
     if( ! pT->mIsTempTrigger )
     {
         mLookupTable.remove( pT->mName, pT );
+        mTriggerMap.remove(pT->getID());
     }
     else
-        mLookupTable.remove( pT->getName() );
+    {
+        mTempLookupTable.remove( pT->getName() );
+        mTempTriggerMap.remove(pT->getID());
+    }
 
-    mTriggerMap.remove(pT->getID());
+
 }
 
 
@@ -283,6 +300,12 @@ void TriggerUnit::processDataStream( QString & data, int line )
 
             pChild->match( subject, data, line );
         }
+        QMapIterator<int, TTrigger *> it(mTempTriggerMap);
+        while ( it.hasNext() )
+        {
+            TTrigger * pChild = it.value();
+            pChild->match( subject, data, line );
+        }
         free( subject );
 
         for( I it = mCleanupList.begin(); it != mCleanupList.end(); it++ )
@@ -305,6 +328,15 @@ void TriggerUnit::compileAll()
             pChild->compileAll();
         }
     }
+    QMapIterator<int, TTrigger *> it(mTempTriggerMap);
+    while ( it.hasNext() )
+    {
+        TTrigger * pChild = it.value();
+        if( pChild->isActive() )
+        {
+            pChild->compileAll();
+        }
+    }
 }
 
 void TriggerUnit::stopAllTriggers()
@@ -316,6 +348,13 @@ void TriggerUnit::stopAllTriggers()
         QString name = pChild->getName();
         pChild->disableFamily();
     }
+    QMapIterator<int, TTrigger *> it(mTempTriggerMap);
+    while ( it.hasNext() )
+    {
+        TTrigger * pChild = it.value();
+        QString name = pChild->getName();
+        pChild->disableFamily();
+    }
 }
 
 void TriggerUnit::reenableAllTriggers()
@@ -324,6 +363,12 @@ void TriggerUnit::reenableAllTriggers()
     for( I it = mTriggerRootNodeList.begin(); it != mTriggerRootNodeList.end(); it++)
     {
         TTrigger * pChild = *it;
+        pChild->enableFamily();
+    }
+    QMapIterator<int, TTrigger *> it(mTempTriggerMap);
+    while ( it.hasNext() )
+    {
+        TTrigger * pChild = it.value();
         pChild->enableFamily();
     }
 }
@@ -396,6 +441,17 @@ bool TriggerUnit::enableTrigger( QString & name )
         ++it;
         found = true;
     }
+    if ( ! found )
+    {
+        it = mTempLookupTable.find( name );
+        while( it != mTempLookupTable.end() && it.key() == name )
+        {
+            TTrigger * pT = it.value();
+            pT->setIsActive( true );
+            ++it;
+            found = true;
+        }
+    }
     return found;
 }
 
@@ -409,6 +465,17 @@ bool TriggerUnit::disableTrigger( QString & name )
         pT->setIsActive( false );
         ++it;
         found = true;
+    }
+    if ( ! found )
+    {
+        it = mTempLookupTable.find( name );
+        while( it != mTempLookupTable.end() && it.key() == name )
+        {
+            TTrigger * pT = it.value();
+            pT->setIsActive( false );
+            ++it;
+            found = true;
+        }
     }
     return found;
 }
@@ -427,9 +494,10 @@ void TriggerUnit::setTriggerStayOpen( QString name, int lines )
 bool TriggerUnit::killTrigger( QString & name )
 {
     typedef list<TTrigger *>::const_iterator I;
-    for( I it = mTriggerRootNodeList.begin(); it != mTriggerRootNodeList.end(); it++)
+    QMapIterator<int, TTrigger *> it(mTempTriggerMap);
+    while ( it.hasNext() )
     {
-        TTrigger * pChild = *it;
+        TTrigger * pChild = it.value();
         if( pChild->getName() == name )
         {
             // only temporary triggers can be killed
@@ -537,9 +605,3 @@ void TriggerUnit::markCleanup( TTrigger * pT )
     }
     mCleanupList.push_back( pT );
 }
-
-
-
-
-
-

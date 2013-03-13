@@ -117,14 +117,29 @@ TTrigger::~TTrigger()
     mpHost->getTriggerUnit()->unregisterTrigger( this );
 }
 
+void TTrigger::setIsTempTrigger( bool b )
+{
+    mIsTempTrigger = b;
+    if ( b )
+    {
+        mpHost->getTriggerUnit()->mLookupTable.remove( mName, this );
+        mpHost->getTriggerUnit()->mTempLookupTable.insertMulti( mName, this );
+    }
+}
+
 void TTrigger::setName( QString name )
 {
+    mName = name;
     if( ! mIsTempTrigger )
     {
         mpHost->getTriggerUnit()->mLookupTable.remove( mName, this );
+        mpHost->getTriggerUnit()->mLookupTable.insertMulti( name, this );
     }
-    mName = name;
-    mpHost->getTriggerUnit()->mLookupTable.insertMulti( name, this );
+    else
+    {
+        mpHost->getTriggerUnit()->mTempLookupTable.insertMulti( name, this );
+    }
+
 }
 
 //FIXME: sperren, wenn code nicht compiliert werden kann *ODER* regex falsch

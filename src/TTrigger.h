@@ -109,9 +109,9 @@ public:
     void             setStartOfLineDelta( int b )    { mStartOfLineDelta = b; }
     void             setLineDelta( int b )           { mLineDelta = b; }
     void             setTriggerType( int b )         { mTriggerType = b; }
-    void             setIsTempTrigger( bool b )      { mIsTempTrigger = b; }
     void             setIsMultiline( bool b )        { mIsMultiline = b; }
     void             setIsFolder( bool b )           { mIsFolder = b; }
+    void             setIsTempTrigger( bool b );
     void             enableTrigger( QString & );
     void             disableTrigger( QString & );
     TTrigger *       killTrigger( QString & );
