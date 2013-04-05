@@ -4794,6 +4794,13 @@ int TLuaInterpreter::tempTimer( lua_State *L )
     }
 
     string luaFunction;
+    if( ! lua_isstring( L, 2 ) )
+    {
+        lua_pushstring( L, "tempTimer: wrong argument type" );
+        lua_error( L );
+        return 1;
+    }
+
     if( lua_isfunction( L, 2 ) )
     {
         Host * pHost = TLuaInterpreter::luaInterpreterMap[L];
@@ -4808,16 +4815,63 @@ int TLuaInterpreter::tempTimer( lua_State *L )
         lua_pushnumber( L, timerID );
         return 1;
     }
-    if( ! lua_isstring( L, 2 ) )
-    {
-        lua_pushstring( L, "tempTimer: wrong argument type" );
-        lua_error( L );
-        return 1;
-    }
     else
     {
         luaFunction = lua_tostring( L, 2 );
     }
+    //check if it's a function in a table
+    QString f = QString::fromStdString( luaFunction );
+    int top = lua_gettop( L );
+    int dpos = f.indexOf( "." );
+    int cpos = f.indexOf( ":" );
+    bool tabled = false;
+    QString table;
+    while( dpos != -1 || cpos != -1 )
+    {
+        int sLen = f.length();
+        int loc;
+        if ( ( dpos != -1 ) && ( dpos < cpos ) )
+            loc = dpos;
+        else
+            loc = cpos;
+        table = f.left( loc );
+        f = f.right( sLen-loc-1 );
+        lua_pushstring( L, table.toLatin1().data() );
+        if ( tabled )//we're already in, go deeper!
+            lua_gettable( L, -2 ); // name is @ -1, table is -2, after this table is -1
+        else//we're not in a table yet, so use the global index to load the table
+            lua_getglobal( L, lua_tostring( L, -1 ) );//table now in -1 stack position
+        tabled = true;
+        if ( lua_isnil( L, -1 ) )
+        {
+            tabled = false;
+            lua_settop( L, top );
+            break;
+        }
+        dpos = f.indexOf( "." );
+        cpos = f.indexOf( ":" );
+    }
+    if ( tabled )
+    {
+        lua_getfield( L, -1, f.toLatin1().data() );
+        if ( lua_isfunction( L, -1 ) )
+        {
+            Host * pHost = TLuaInterpreter::luaInterpreterMap[L];
+            TLuaInterpreter * pLuaInterpreter = pHost->getLuaInterpreter();
+            QString _fun;
+            int timerID = pLuaInterpreter->startTempTimer( luaTimeout, _fun );
+            TTimer * pT = pHost->getTimerUnit()->getTimer( timerID );
+            pT->mRegisteredAnonymousLuaFunction = true;
+            lua_pushlightuserdata( L, pT );
+            lua_pushvalue( L, -1 );
+            lua_settable( L, LUA_REGISTRYINDEX );
+            lua_pushnumber( L, timerID );
+            return 1;
+        }
+        else
+            lua_settop( L, top );
+    }
+
 
     Host * pHost = TLuaInterpreter::luaInterpreterMap[L];
     TLuaInterpreter * pLuaInterpreter = pHost->getLuaInterpreter();
