@@ -7443,6 +7443,154 @@ int TLuaInterpreter::getMapLabel( lua_State * L )
     return 1;
 }
 
+int TLuaInterpreter::addCustomLine( lua_State * L )
+{
+    //args: from id, id_to, direction, style, line color, arrow (bool)
+    int id_from, id_to, r=255, g=0, b=0;
+    QString line_style("solid line");
+    QString direction;
+    QList<int> x;
+    QList<int> y;
+    QList<int> z;
+    bool arrow = false;
+    if ( ! lua_isnumber( L, 1 ) )
+    {
+        lua_pushstring( L, "addCustomLine: First argument must be room number" );
+        lua_error( L );
+        return 1;
+    }
+    else
+        id_from = lua_tointeger( L, 1 );
+    if ( ! lua_isnumber( L, 2 ) && ! lua_istable( L, 2) )
+    {
+        lua_pushstring( L, "addCustomLine: Second argument must be room number or coordinate list" );
+        lua_error( L );
+        return 1;
+    }
+    else if ( lua_isnumber( L, 2 ) )
+    {
+        id_to = lua_tointeger( L, 2 );
+        Host * pHost = TLuaInterpreter::luaInterpreterMap[L];
+        TRoom * pR = pHost->mpMap->mpRoomDB->getRoom( id_to );
+        x.append(pR->x);
+        y.append(pR->y);
+        z.append(pR->z);
+    }
+    else if ( lua_istable( L, 2 ) )
+    {
+        lua_pushnil( L );
+        while ( lua_next( L, 2 ) != 0 )
+        {
+            if ( lua_type( L, -1 ) != LUA_TTABLE )
+            {
+                lua_pushstring( L, "addCustomLine: Coordinate list must be a table of tabled coordinates" );
+                lua_error( L );
+                return 1;
+            }
+            lua_pushnil( L );
+            int j=1;
+            while ( lua_next( L, -2 ) != 0 )
+            {
+                if ( lua_type( L, -1 ) != LUA_TNUMBER )
+                {
+                    lua_pushstring( L, "addCustomLine: Coordinates must be numeric." );
+                    lua_error( L );
+                    return 1;
+                }
+                if ( j==1 )
+                    x.append( lua_tonumber( L, -1 ) );
+                else if ( j==2 )
+                    y.append( lua_tonumber( L, -1 ) );
+                else if ( j==3 )
+                    z.append( lua_tonumber( L, -1 ) );
+                j++;
+                lua_pop( L, 1 );
+            }
+            lua_pop( L, 1 );
+        }
+    }
+    if ( ! lua_isstring( L, 3 ) )
+    {
+        lua_pushstring( L, "addCustomLine: Third argument must be direction" );
+        lua_error( L );
+        return 1;
+    }
+    else
+    {
+        QStringList validDirections;
+        validDirections << "NW" << "N" << "NE" << "E" << "SE" << "S" << "SW" << "W";
+        direction = QString(lua_tostring( L, 3 )).toUpper();
+        if ( ! validDirections.contains( direction ) )
+        {
+            lua_pushstring( L, "addCustomLine: Direction argument must be an abbreviated cardinal direction." );
+            lua_error( L );
+            return 1;
+        }
+    }
+    if ( lua_isstring( L, 4 ) )
+    {
+        QStringList validLines;
+        validLines << "solid line" << "dot line" << "dash line";
+        line_style = QString(lua_tostring( L, 4 ));
+        if ( ! validLines.contains(line_style) )
+        {
+            lua_pushstring( L, "addCustomLine: Valid line styles: solid line, dot line, dash line" );
+            lua_error( L );
+            return 1;
+        }
+    }
+    if ( lua_istable( L, 5) )
+    {
+        lua_pushnil( L );
+        int tind = 0;
+        while ( lua_next( L, 5 ) != 0 )
+        {
+            if ( lua_type( L, -1 ) != LUA_TNUMBER )
+            {
+                lua_pushstring( L, "addCustomLine: Colors must be a number between 0 and 255" );
+                lua_error( L );
+                return 1;
+            }
+            if ( tind==0 )
+                r = lua_tonumber( L, -1 );
+            else if ( tind==1 )
+                g = lua_tonumber( L, -1 );
+            else if ( tind==2 )
+                b = lua_tonumber( L, -1 );
+            tind++;
+            lua_pop( L, 1 );
+        }
+    }
+    if ( lua_isboolean( L, 6 ) )
+    {
+        arrow = lua_toboolean( L, 6 );
+    }
+    int lz=0;
+    QList<QPointF> points;
+    for(int i=0;i<z.size();i++)
+    {
+        if (i==0)
+            lz=z.at(i);
+        else if (lz != z.at(i))
+        {
+            lua_pushstring( L, "addCustomLine: All z values must be on same level." );
+            lua_error( L );
+            return 1;
+        }
+        points.append(QPointF(x.at(i),y.at(i)));
+    }
+    Host * pHost = TLuaInterpreter::luaInterpreterMap[L];
+    TRoom * pR = pHost->mpMap->mpRoomDB->getRoom( id_from );
+    QList<int> colors;
+    colors.append(r);
+    colors.append(g);
+    colors.append(b);
+    pR->customLines.insert( direction, points );
+    pR->customLinesArrow.insert( direction, arrow );
+    pR->customLinesStyle.insert( direction, line_style );
+    pR->customLinesColor.insert( direction,  colors);
+    return 0;
+}
 
 int TLuaInterpreter::addSpecialExit( lua_State * L )
 {
@@ -10125,6 +10273,7 @@ void TLuaInterpreter::initLuaGlobals()
     lua_register( pGlobalLua, "getRoomName", TLuaInterpreter::getRoomName );
     lua_register( pGlobalLua, "setGridMode", TLuaInterpreter::setGridMode );
     lua_register( pGlobalLua, "solveRoomCollisions", TLuaInterpreter::solveRoomCollisions );
+    lua_register( pGlobalLua, "addCustomLine", TLuaInterpreter::addCustomLine );
     lua_register( pGlobalLua, "addSpecialExit", TLuaInterpreter::addSpecialExit );
     lua_register( pGlobalLua, "getSpecialExits", TLuaInterpreter::getSpecialExits );
     lua_register( pGlobalLua, "getSpecialExitsSwap", TLuaInterpreter::getSpecialExitsSwap );

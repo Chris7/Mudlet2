@@ -165,6 +165,7 @@ public:
     static int getRoomUserData( lua_State * );
     static int searchRoomUserData( lua_State * );
     static int clearRoomUserData( lua_State * );
+    static int addCustomLine( lua_State * );
     static int addSpecialExit( lua_State * );
     static int getSpecialExits( lua_State * );
     static int getSpecialExitsSwap( lua_State * );
