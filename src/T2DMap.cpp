@@ -951,7 +951,34 @@ void T2DMap::paintEvent( QPaintEvent * e )
                     // one way exit or 2 way exit?
                     if( ! oneWayExits.contains( rID ) )
                     {
-                        p.drawLine( (int)p1.x(), (int)p1.y(), (int)p2.x(), (int)p2.y() );
+                        QPointF points[4];
+                        points[0] = QPoint((int)p2.x(),(int)p2.y());
+                        QMapIterator<int, int> it(pR->getExits());
+                        while(it.hasNext())
+                        {
+                            it.next();
+                            if ( it.key() == rID )
+                            {
+                                QVector3D uDirection = unitVectors[it.value()];
+                                points[1] = QPoint(p2.x()+(int)uDirection.x()*(rSize*3/4*tx), p2.y()+uDirection.y()*(rSize*3/4*ty));
+                                break;
+                            }
+
+                        }
+                        QMapIterator<int, int> it2(pE->getExits());
+                        while(it2.hasNext())
+                        {
+                            it2.next();
+                            if ( it2.key() == trID )
+                            {
+                                QVector3D uDirection = unitVectors[it2.value()];
+                                points[2] = QPoint(p1.x()+(int)uDirection.x()*(rSize*3/4*tx), p1.y()+uDirection.y()*(rSize*3/4*ty));
+                                break;
+                            }
+
+                        }
+                        points[3] = QPoint((int)p1.x(),(int)p1.y());
+                        p.drawPolyline(const_cast<const QPointF*>(points),4);
                     }
                     else
                     {

@@ -28,6 +28,7 @@ class TRoom
 public:
     TRoom(TRoomDB* pRDB);
     ~TRoom();
+    QMultiMap<int, int> getExits();
     bool setExit( int to , int dir);
     bool hasExit(int _id);
     void setWeight( int );

@@ -42,6 +42,45 @@ TRoom::~TRoom()
     mpRoomDB->__removeRoom( id );
 }
 
+QMultiMap<int, int> TRoom::getExits()
+{
+    QMultiMap<int, int> rExits;
+    if (getNorth() != -1)
+        rExits.insert(getNorth(),DIR_NORTH);
+    if (getNortheast() != -1)
+        rExits.insert(getNortheast(),DIR_NORTHEAST);
+    if (getNorthwest() != -1)
+        rExits.insert(getNorthwest(),DIR_NORTHWEST);
+    if (getEast() != -1)
+        rExits.insert(getEast(),DIR_EAST);
+    if (getSoutheast() != -1 )
+        rExits.insert(getSoutheast(),DIR_SOUTHEAST);
+    if (getSouth() != -1 )
+        rExits.insert(getSouth(),DIR_SOUTH);
+    if (getSouthwest() != -1 )
+        rExits.insert(getSouthwest(),DIR_SOUTHWEST);
+    if (getWest() != -1 )
+        rExits.insert(getWest(),DIR_WEST);
+    if (getUp() != -1 )
+        rExits.insert(getUp(),DIR_UP);
+    if (getDown() != -1 )
+        rExits.insert(getDown(),DIR_DOWN);
+    if (getIn() != -1 )
+        rExits.insert(getIn(),DIR_IN);
+    if (getOut() != -1 )
+        rExits.insert(getOut(),DIR_OUT);
+    if ( ! getOtherMap().isEmpty() )
+    {
+        QMapIterator<int, QString> it(getOtherMap());
+        while (it.hasNext())
+        {
+            it.next();
+            rExits.insert(it.key(),12);
+        }
+    }
+    return rExits;
+}
+
 int TRoom::hasExitStub(int direction){
     if (exitStubs.contains(direction))
         return 1;
