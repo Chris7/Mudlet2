@@ -7,6 +7,9 @@
 #ifdef Q_OS_WIN
     #include "quazip.h"
     #include "JlCompress.h"
+#else
+    #include <quazip/quazip.h>
+    #include <quazip/JlCompress.h>
 #endif
 #include <QDesktopServices>
 dlgPackageExporter::dlgPackageExporter(QWidget *parent) :
@@ -32,7 +35,7 @@ dlgPackageExporter::dlgPackageExporter(QWidget *parent, Host* host) :
 //       name config file and arbitray additional package content selection.
 //       However, this feature is currently restricted to windows only
 //       until quazip is part of the other Mudlet builds
-#ifdef Q_OS_WIN
+//#ifdef Q_OS_WIN
     ui->browseButton->hide();
     ui->filePath->hide();
     ui->textLabel1->hide();
@@ -59,12 +62,12 @@ dlgPackageExporter::dlgPackageExporter(QWidget *parent, Host* host) :
         configFile.close();
     }
     connect(ui->addFiles, SIGNAL(clicked()), this, SLOT(slot_addFiles()));
-#else
-    ui->addFiles->hide();
-    ui->textLabel1_2->hide();
-    connect(ui->browseButton, SIGNAL(clicked()), this, SLOT(slot_browse_button()));
-    exportButton->setDisabled(true); // disabled by default until the user selects a location
-#endif
+//#else
+//    ui->addFiles->hide();
+//    ui->textLabel1_2->hide();
+//    connect(ui->browseButton, SIGNAL(clicked()), this, SLOT(slot_browse_button()));
+//    exportButton->setDisabled(true); // disabled by default until the user selects a location
+//#endif
 
     ui->buttonBox->addButton(exportButton, QDialogButtonBox::ResetRole);
     connect(exportButton, SIGNAL(clicked()), this, SLOT(slot_export_package()));
@@ -91,9 +94,9 @@ void dlgPackageExporter::recurseTree(QTreeWidgetItem * pItem, QList<QTreeWidgetI
 
 
 void dlgPackageExporter::slot_export_package(){
-#ifndef Q_OS_WIN
-    filePath = ui->filePath->text();
-#endif
+//#ifndef Q_OS_WIN
+//    filePath = ui->filePath->text();
+//#endif
     QFile file_xml( filePath );
     if( file_xml.open( QIODevice::WriteOnly ) )
     {
@@ -108,6 +111,10 @@ void dlgPackageExporter::slot_export_package(){
             if (item->checkState(0) == Qt::Unchecked && triggerMap.contains(item)){
                 triggerMap[item]->exportItem = false;
             }
+            else if (item->checkState(0) == Qt::Checked && triggerMap.contains(item) && triggerMap[item]->mModuleMasterFolder){
+                triggerMap[item]->mModuleMasterFolder=false;
+                modTriggerMap.insert(item, triggerMap[item]);
+            }
         }
         items = treeWidget->findItems(QString("Timers"), Qt::MatchExactly, 0);
         top = items.first();
@@ -117,6 +124,10 @@ void dlgPackageExporter::slot_export_package(){
             QTreeWidgetItem * item = timerList.at(i);
             if (item->checkState(0) == Qt::Unchecked && timerMap.contains(item)){
                 timerMap[item]->exportItem = false;
+            }
+            else if (item->checkState(0) == Qt::Checked && timerMap.contains(item) && timerMap[item]->mModuleMasterFolder){
+                timerMap[item]->mModuleMasterFolder=false;
+                modTimerMap.insert(item, timerMap[item]);
             }
         }
         items = treeWidget->findItems(QString("Aliases"), Qt::MatchExactly, 0);
@@ -128,6 +139,10 @@ void dlgPackageExporter::slot_export_package(){
             if (item->checkState(0) == Qt::Unchecked && aliasMap.contains(item)){
                 aliasMap[item]->exportItem = false;
             }
+            else if (item->checkState(0) == Qt::Checked && aliasMap.contains(item) && aliasMap[item]->mModuleMasterFolder){
+                aliasMap[item]->mModuleMasterFolder=false;
+                modAliasMap.insert(item, aliasMap[item]);
+            }
         }
         items = treeWidget->findItems(QString("Buttons"), Qt::MatchExactly, 0);
         top = items.first();
@@ -138,6 +153,10 @@ void dlgPackageExporter::slot_export_package(){
             if (item->checkState(0) == Qt::Unchecked && actionMap.contains(item)){
                 actionMap[item]->exportItem = false;
             }
+            else if (item->checkState(0) == Qt::Checked && actionMap.contains(item) && actionMap[item]->mModuleMasterFolder){
+                actionMap[item]->mModuleMasterFolder=false;
+                modActionMap.insert(item, actionMap[item]);
+            }
         }
         items = treeWidget->findItems(QString("Scripts"), Qt::MatchExactly, 0);
         top = items.first();
@@ -146,8 +165,11 @@ void dlgPackageExporter::slot_export_package(){
         for (int i=0;i<scriptList.size();i++){
             QTreeWidgetItem * item = scriptList.at(i);
             if (item->checkState(0) == Qt::Unchecked && scriptMap.contains(item)){
-                qDebug()<<"not writing"<<scriptMap[item]->getName();
                 scriptMap[item]->exportItem = false;
+            }
+            else if (item->checkState(0) == Qt::Checked && scriptMap.contains(item) && scriptMap[item]->mModuleMasterFolder){
+                scriptMap[item]->mModuleMasterFolder=false;
+                modScriptMap.insert(item, scriptMap[item]);
             }
         }
         items = treeWidget->findItems(QString("Keys"), Qt::MatchExactly, 0);
@@ -159,6 +181,10 @@ void dlgPackageExporter::slot_export_package(){
             if (item->checkState(0) == Qt::Unchecked && keyMap.contains(item)){
                 keyMap[item]->exportItem = false;
             }
+            else if (item->checkState(0) == Qt::Checked && keyMap.contains(item) && keyMap[item]->mModuleMasterFolder){
+                keyMap[item]->mModuleMasterFolder=false;
+                modKeyMap.insert(item, keyMap[item]);
+            }
         }
         writer.writeModuleXML(&file_xml,"");
         file_xml.close();
@@ -169,11 +195,17 @@ void dlgPackageExporter::slot_export_package(){
             if (triggerMap.contains(item)){
                 triggerMap[item]->exportItem = true;
             }
+            if (modTriggerMap.contains(item)){
+                modTriggerMap[item]->mModuleMasterFolder = true;
+            }
         }
         for (int i=0;i<timerList.size();i++){
             QTreeWidgetItem * item = timerList.at(i);
             if (timerMap.contains(item)){
                 timerMap[item]->exportItem = true;
+            }
+            if (modTimerMap.contains(item)){
+                modTimerMap[item]->mModuleMasterFolder = true;
             }
         }
         for (int i=0;i<actionList.size();i++){
@@ -181,11 +213,17 @@ void dlgPackageExporter::slot_export_package(){
             if (actionMap.contains(item)){
                 actionMap[item]->exportItem = true;
             }
+            if (modActionMap.contains(item)){
+                modActionMap[item]->mModuleMasterFolder = true;
+            }
         }
         for (int i=0;i<scriptList.size();i++){
             QTreeWidgetItem * item = scriptList.at(i);
             if (scriptMap.contains(item)){
                 scriptMap[item]->exportItem = true;
+            }
+            if (modScriptMap.contains(item)){
+                modScriptMap[item]->mModuleMasterFolder = true;
             }
         }
         for (int i=0;i<keyList.size();i++){
@@ -193,20 +231,26 @@ void dlgPackageExporter::slot_export_package(){
             if (keyMap.contains(item)){
                 keyMap[item]->exportItem = true;
             }
+            if (modKeyMap.contains(item)){
+                modKeyMap[item]->mModuleMasterFolder = true;
+            }
         }
         for (int i=0;i<aliasList.size();i++){
             QTreeWidgetItem * item = aliasList.at(i);
             if (aliasMap.contains(item)){
                 aliasMap[item]->exportItem = true;
             }
+            if (modAliasMap.contains(item)){
+                modAliasMap[item]->mModuleMasterFolder = true;
+            }
         }
 
 
-        #ifdef Q_OS_WIN
+        //#ifdef Q_OS_WIN
             JlCompress::compressDir(zip, tempDir );
-        #else
-            ui->infoLabel->setText("Exported package to "+filePath);
-        #endif
+//        #else
+//            ui->infoLabel->setText("Exported package to "+filePath);
+//        #endif
     } else {
         ui->infoLabel->setText("Failed to export - couldn't open "+filePath+" for writing in. Do you have the necessary permissions to write to that folder?");
     }

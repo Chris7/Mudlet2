@@ -819,6 +819,7 @@ inline int TBuffer::lookupColor( QString & s, int pos )
 
 void TBuffer::translateToPlainText( std::string & s )
 {
+    //cout << "TRANSLATE<"<<s<<">"<<endl;
     speedAppend = 0;
     speedTP = 0;
     int numCodes=0;
@@ -1903,28 +1904,51 @@ void TBuffer::translateToPlainText( std::string & s )
             }
             continue;
         }
-        mMudLine.append( ch );
-        TChar c( ! mIsDefaultColor && mBold ? fgColorLightR : fgColorR,
-                 ! mIsDefaultColor && mBold ? fgColorLightG : fgColorG,
-                 ! mIsDefaultColor && mBold ? fgColorLightB : fgColorB,
-                 bgColorR,
-                 bgColorG,
-                 bgColorB,
-                 mIsDefaultColor ? mBold : false,
-                 mItalics,
-                 mUnderline );
-
-        if( mMXP_LINK_MODE )
+        if( ch != '\t' )
         {
-            c.link = mLinkID;
-//            c.fgR = 0;
-//            c.fgG = 0;
-//            c.fgB = 255;
-            c.underline = true;
+            mMudLine.append( ch );
+            TChar c( ! mIsDefaultColor && mBold ? fgColorLightR : fgColorR,
+                     ! mIsDefaultColor && mBold ? fgColorLightG : fgColorG,
+                     ! mIsDefaultColor && mBold ? fgColorLightB : fgColorB,
+                     bgColorR,
+                     bgColorG,
+                     bgColorB,
+                     mIsDefaultColor ? mBold : false,
+                     mItalics,
+                     mUnderline );
+
+            if( mMXP_LINK_MODE )
+            {
+                c.link = mLinkID;
+    //            c.fgR = 0;
+    //            c.fgG = 0;
+    //            c.fgB = 255;
+                c.underline = true;
+            }
+
+
+            mMudBuffer.push_back( c );
         }
-
-
-        mMudBuffer.push_back( c );
+        else
+        {
+            int spaces = 8 - mMudLine.size() % 8;
+            QString tab;
+            for( int spi=0; spi<spaces; spi++ )
+            {
+                tab.append( ' ' );
+                TChar tab_c( ! mIsDefaultColor && mBold ? fgColorLightR : fgColorR,
+                         ! mIsDefaultColor && mBold ? fgColorLightG : fgColorG,
+                         ! mIsDefaultColor && mBold ? fgColorLightB : fgColorB,
+                         bgColorR,
+                         bgColorG,
+                         bgColorB,
+                         mIsDefaultColor ? mBold : false,
+                         mItalics,
+                         mUnderline );
+                mMudBuffer.push_back(tab_c);
+            }
+            mMudLine.append( tab );
+        }
         msPos++;
     }
 }
@@ -2630,7 +2654,8 @@ void TBuffer::paste( QPoint & P, TBuffer chunk )
         TChar format;
         if( y == -1 )
         {
-            wrap( y,mWrapAt, mWrapIndent, format );
+            //FIXME:
+            //wrap( y,mWrapAt, mWrapIndent, format );
         }
         else
         {
@@ -2678,7 +2703,7 @@ void TBuffer::appendBuffer( TBuffer chunk )
 
 int TBuffer::calcWrapPos( int line, int begin, int end )
 {
-    const QString lineBreaks = ",.- ";
+    const QString lineBreaks = ",.- \n";
     if( lineBuffer.size() < line ) return 0;
     int lineSize = static_cast<int>(lineBuffer[line].size())-1;
     if( lineSize < end )
@@ -2693,6 +2718,22 @@ int TBuffer::calcWrapPos( int line, int begin, int end )
         }
     }
     return 0;
+}
+
+inline int TBuffer::skipSpacesAtBeginOfLine( int i, int i2 )
+{
+    int offset = 0;
+    int i_end = lineBuffer[i].size();
+    QChar space = ' ';
+    while( i2 < i_end )
+    {
+        if( lineBuffer[i][i2] == space )
+            offset++;
+        else
+            break;
+        i2++;
+    }
+    return offset;
 }
 
 inline int TBuffer::wrap( int startLine )
@@ -2790,6 +2831,7 @@ inline int TBuffer::wrap( int startLine )
             newLine.clear();
             lineText = "";
             indent = 0;
+            i2 += skipSpacesAtBeginOfLine( i, i2 );
         }
         lineCount++;
     }
@@ -2836,6 +2878,7 @@ inline int TBuffer::wrap( int startLine )
 // returns how many new lines have been inserted by the wrapping action
 int TBuffer::wrap( int startLine, int screenWidth, int indentSize, TChar & format )
 {
+    //FIXME:
     return 0;
 
     if( startLine < 0 ) return 0;
@@ -2963,8 +3006,8 @@ int TBuffer::wrapLine( int startLine, int screenWidth, int indentSize, TChar & f
     {
         if( i > startLine ) break; //only wrap one line of text
 
-        assert( static_cast<int>(buffer[i].size()) == lineBuffer[i].size() );
-        assert( static_cast<int>(buffer.size()) == promptBuffer.size() );
+        //assert( static_cast<int>(buffer[i].size()) == lineBuffer[i].size() );
+        //assert( static_cast<int>(buffer.size()) == promptBuffer.size() );
         std::deque<TChar> newLine;
         QString lineText;
 
@@ -3030,7 +3073,7 @@ int TBuffer::wrapLine( int startLine, int screenWidth, int indentSize, TChar & f
                         queue.push( newLine );
                         tempList.append( lineText );
                     }
-                    break;
+                    goto OPT_OUT_CLEAN;
                 }
                 newLine.push_back( buffer[i][i2] );
                 lineText.append( lineBuffer[i].at(i2) );
@@ -3039,7 +3082,7 @@ int TBuffer::wrapLine( int startLine, int screenWidth, int indentSize, TChar & f
             queue.push( newLine );
             tempList.append( lineText );
 
-            newLine.clear();
+            OPT_OUT_CLEAN: newLine.clear();
             lineText.clear();
             indent = 0;
         }

@@ -66,16 +66,17 @@ class TMap
 {
 public:
     TMap( Host *);
+    void mapClear();
     int createMapLabelID( int area );
     int createMapImageLabel(int area, QString filePath, float x, float y, float z, float width, float height, float zoom, bool showOnTop, bool noScaling );
     int createMapLabel(int area, QString text, float x, float y, float z, QColor fg, QColor bg, bool showOnTop=true, bool noScaling=true, qreal zoom=15.0, int fontSize=15 );
     void deleteMapLabel( int area, int labelID );
     bool addRoom( int id=0 );
-    void auditRooms();
     void setRoomArea( int id, int area );
-    void deleteRoom( int id );
+    //void deleteRoom( int id );
     void deleteArea( int id );
     int  createNewRoomID();
+    void logError(QString &msg);
     bool fixExits2(int);
     void tidyMap( int area );
     void getConnectedNodesGreaterThanX( int id, int x );
@@ -88,7 +89,6 @@ public:
     bool setExit( int from, int to, int dir );
     bool setRoomCoordinates( int id, int x, int y, int z );
     void init(Host*);
-    void buildAreas();
     bool fixExits( int id, int dir );
     QList<int> detectRoomCollisions( int id );
     void solveRoomCollision( int id, int creationDirection, bool PCheck=true );
@@ -103,9 +103,7 @@ public:
     void exportMapToDatabase();
     void importMapFromDatabase();
     void connectExitStub(int roomId, int dirType);
-    QMap<int, TRoom *> rooms;
-    QMap<int, TArea *> areas;
-    QMap<int, QString> areaNamesMap;
+    TRoomDB * mpRoomDB;
     QMap<int, int> envColors;
     QVector3D span;
     Host * mpHost;
@@ -132,7 +130,7 @@ public:
     QList<int> mTestedNodes;
     QList<int> conList;
     int mPlausaOptOut;
-    QMap<QString,int> hashTable;
+
     QMap<QString, int> pixNameTable;
     QMap<int, QPixmap> pixTable;
     typedef adjacency_list<listS, vecS, directedS, no_property, property<edge_weight_t, cost> > mygraph_t;

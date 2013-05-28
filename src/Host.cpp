@@ -715,7 +715,6 @@ void Host::raiseEvent( TEvent * pE )
     if( pE->mArgumentList.size() < 1 ) return;
     if( mEventHandlerMap.contains( pE->mArgumentList[0] ) )
     {
-        qDebug()<<"event:"<<pE->mArgumentList;
         QList<TScript *> scriptList = mEventHandlerMap[pE->mArgumentList[0]];
         for( int i=0; i<scriptList.size(); i++ )
         {
@@ -724,11 +723,9 @@ void Host::raiseEvent( TEvent * pE )
     }
     if( mAnonymousEventHandlerFunctions.contains( pE->mArgumentList[0] ) )
     {
-        qDebug()<<"event:"<<pE->mArgumentList;
         QStringList funList = mAnonymousEventHandlerFunctions[pE->mArgumentList[0]];
         for( int i=0; i<funList.size(); i++ )
         {
-            qDebug()<<"--> calling anonymous handler:"<<funList[i];
             mLuaInterpreter.callEventHandler( funList[i], pE );
         }
     }
@@ -826,7 +823,7 @@ bool Host::serialize()
         QMessageBox::critical( 0, "Profile Save Failed", "Failed to save "+mHostName+" to location "+filename_xml+" because of the following error: "+file_xml.errorString() );
     }
 
-    if( mpMap->rooms.size() > 10 )
+    if( mpMap->mpRoomDB->size() > 10 )
     {
         QFile file_map( filename_map );
         if ( file_map.open( QIODevice::WriteOnly ) )
@@ -875,6 +872,9 @@ void Host::showUnpackingProgress( QString  txt )
 #ifdef Q_OS_WIN
     #include "quazip.h"
     #include "JlCompress.h"
+#else
+    #include <quazip/quazip.h>
+    #include <quazip/JlCompress.h>
 #endif
 
 bool Host::installPackage( QString fileName, int module )
@@ -956,12 +956,12 @@ bool Host::installPackage( QString fileName, int module )
 
         // At the moment, QuaZip is for Windows only - OSX and Linux use LuaZip as it is more commonly available
         // In the future, QuaZip will be the preferred option with LuaZip as a fallback
-        #ifndef Q_OS_WIN
-            QString _script = QString( "unzip([[%1]], [[%2]])" ).arg( fileName ).arg( _dest );
-            mLuaInterpreter.compileAndExecuteScript( _script );
-        #else
+//        #ifndef Q_OS_WIN
+//            QString _script = QString( "unzip([[%1]], [[%2]])" ).arg( fileName ).arg( _dest );
+//            mLuaInterpreter.compileAndExecuteScript( _script );
+//        #else
             JlCompress::extractDir(fileName, _dest );
-        #endif
+//        #endif
         mpUnzipDialog->close();
         mpUnzipDialog = 0;
 

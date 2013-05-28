@@ -981,8 +981,16 @@ bool mudlet::createMiniConsole( Host * pHost, QString & name, int x, int y, int 
         if( pC )
         {
             dockWindowConsoleMap[name] = pC;
+            std::string _n = name.toStdString();
+            pC->setMiniConsoleFontSize( _n, 12 );
             return true;
         }
+    }
+    else
+    {
+        TConsole * pC = dockWindowConsoleMap[name];
+        pC->resize( width, height );
+        pC->move( x, y );
     }
     return false;
 }
@@ -1819,7 +1827,7 @@ void mudlet::slot_mapper()
     pHost->mpMap->mpM = pHost->mpMap->mpMapper->glWidget;
     pDock->setWidget( pHost->mpMap->mpMapper );
 
-    if( pHost->mpMap->rooms.size() < 1 )
+    if( pHost->mpMap->mpRoomDB->getRoomIDList().size() < 1 )
     {
         pHost->mpMap->restore("");
         pHost->mpMap->init( pHost );
@@ -2315,6 +2323,14 @@ void mudlet::slot_replaySpeedDown()
     txt.append("X</b></font>");
     replaySpeedDisplay->setText(txt);
     replaySpeedDisplay->show();
+}
+
+void mudlet::stopSounds()
+{
+    mpMusicBox1->stop();
+    mpMusicBox2->stop();
+    mpMusicBox3->stop();
+    mpMusicBox4->stop();
 }
 
 void mudlet::playSound( QString s )

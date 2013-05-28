@@ -9,10 +9,10 @@ QT += network opengl phonon
 DEPENDPATH += .
 INCLUDEPATH += .
 LIBLUA = -llua5.1
-!exists(/usr/lib/x86_64-linux-gnu/liblua5.1.a):LIBLUA = -llua
+#!exists(/usr/lib/x86_64-linux-gnu/liblua5.1.a):LIBLUA = -llua
 
 # automatically link to LuaJIT if it exists
-exists(/usr/lib/x86_64-linux-gnu/libluajit-5.1.a):LIBLUA = -L/usr/lib/x86_64-linux-gnu/ -lluajit-5.1
+#exists(/usr/lib/x86_64-linux-gnu/libluajit-5.1.a):LIBLUA = -L/usr/lib/x86_64-linux-gnu/ -lluajit-5.1
 
 unix:LIBS += -lpcre \
     $$LIBLUA \
@@ -20,6 +20,7 @@ unix:LIBS += -lpcre \
     -L/usr/local/lib/ \
     -lyajl \
     -lGLU \
+    -lquazip \
     -lzzip
 
 win32:LIBS += -L"c:\mudlet3_package" \
@@ -110,7 +111,6 @@ SOURCES += TConsole.cpp \
     dlgMapper.cpp \
     TRoom.cpp \
     TMap.cpp \
-    lua_yajl1.c \
     TBuffer.cpp \
     irc/src/ircbuffer.cpp \
     irc/src/irc.cpp \
@@ -120,7 +120,8 @@ SOURCES += TConsole.cpp \
     T2DMap.cpp \
     dlgRoomExits.cpp \
     dlgPackageExporter.cpp \
-    exitstreewidget.cpp
+    exitstreewidget.cpp \
+    TRoomDB.cpp
 
 
 HEADERS += mudlet.h \
@@ -197,7 +198,8 @@ HEADERS += mudlet.h \
     T2DMap.h \
     dlgRoomExits.h \
     dlgPackageExporter.h \
-    exitstreewidget.h
+    exitstreewidget.h \
+    TRoomDB.h
 
 FORMS += ui/connection_profiles.ui \
     ui/main_window.ui \

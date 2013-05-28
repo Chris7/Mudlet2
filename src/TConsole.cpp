@@ -755,7 +755,7 @@ void TConsole::closeEvent( QCloseEvent *event )
                 mpHost->saveModules(0);
 
             }
-            if( mpHost->mpMap->rooms.size() > 0 )
+            if( mpHost->mpMap->mpRoomDB->size() > 0 )
             {
                 QDir dir_map;
                 QString directory_map = QDir::homePath()+"/.config/mudlet/profiles/"+profile_name+"/map";
@@ -806,7 +806,7 @@ void TConsole::closeEvent( QCloseEvent *event )
                 writer.exportHost( & file_xml );
                 file_xml.close();
                 mpHost->saveModules(0);
-                if( mpHost->mpMap->rooms.size() > 0 )
+                if( mpHost->mpMap && mpHost->mpMap->mpRoomDB->size() > 0 )
                 {
                     QDir dir_map;
                     QString directory_map = QDir::homePath()+"/.config/mudlet/profiles/"+profile_name+"/map";
@@ -1672,19 +1672,10 @@ void TConsole::insertText( QString text, QPoint P )
                 int y_tmp = mUserCursor.y();
                 int down = buffer.wrapLine( mUserCursor.y(),mpHost->mScreenWidth, mpHost->mWrapIndentCount, mFormatCurrent );
                 console->needUpdate( y_tmp, y_tmp+down+1 );
-                int y_neu = y_tmp+down;
-                int x_adjust = text.lastIndexOf("\n");
-                int x_neu = 0;
-                if( x_adjust != -1 )
-                {
-                    x_neu = text.size()-x_adjust-1 > 0 ? text.size()-x_adjust-1 : 0;
-                }
-                moveCursor( x_neu, y_neu );
             }
             else
             {
                 console->needUpdate( mUserCursor.y(),mUserCursor.y()+1 );
-                moveCursor( mUserCursor.x()+text.size(), mUserCursor.y() );
             }
         }
     }
@@ -1764,6 +1755,8 @@ bool TConsole::loadMap(QString location)
         mudlet::self()->slot_mapper();
     }
     if( !mpHost->mpMap || !mpHost->mpMap->mpMapper ) return false;
+
+    mpHost->mpMap->mapClear();
 
     if ( mpHost->mpMap->restore(location) )
     {
