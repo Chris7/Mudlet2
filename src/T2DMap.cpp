@@ -2777,7 +2777,7 @@ void T2DMap::slot_setRoomWeight()
         TRoom * pR = mpMap->mpRoomDB->getRoom(mMultiSelectionList[0]);
         if( !pR ) return;
         if( mMultiSelectionList.size() == 1 )
-            _w = pR->weight;
+            _w = pR->getWeight();
         else
             _w = 1;
         int w = QInputDialog::getInt(this,"Enter a room weight (= travel time)","room weight:", _w);
@@ -2787,7 +2787,7 @@ void T2DMap::slot_setRoomWeight()
             pR = mpMap->mpRoomDB->getRoom(mMultiSelectionList[j]);
             if( pR )
             {
-                pR->weight = w;
+                pR->setWeight(w);
                 mpMap->mMapGraphNeedsUpdate = true;
             }
         }
