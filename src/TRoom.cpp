@@ -1,11 +1,12 @@
 
 #include <QVector3D>
 #include "TRoom.h"
-
+#include "TRoomDB.h"
 #include <QDebug>
 
-TRoom::TRoom()
+TRoom::TRoom(TRoomDB * pRDB )
 : id( 0 )
+, mpRoomDB( pRDB )
 , area( 0 )
 , x( 0 )
 , y( 0 )
@@ -36,6 +37,11 @@ TRoom::TRoom()
 {
 }
 
+TRoom::~TRoom()
+{
+    mpRoomDB->__removeRoom( id );
+}
+
 int TRoom::hasExitStub(int direction){
     if (exitStubs.contains(direction))
         return 1;
@@ -50,36 +56,129 @@ void TRoom::setExitStub(int direction, int status){
         exitStubs.removeOne(direction);
 }
 
+int TRoom::getExitWeight( QString cmd )
+{
+    if( exitWeights.contains( cmd ) )
+    {
+        return exitWeights[cmd];
+    }
+    else
+        return weight; // NOTE: if no exit weight has been set: exit weight = room weight
+}
+
 void TRoom::setWeight( int w )
 {
+    if( w < 1 ) w = 1;
     weight = w;
 }
 
-bool TRoom::hasExit( int id )
+//bool TRoom::setExit( int to, int dir )
+//{
+//    TRoom * pR_to = mpRoomDB->getRoom( to );
+//    if( !pR_to )
+//    {
+//        to = -1;
+//    }
+//    switch( dir )
+//    {
+//        case DIR_NORTH:
+//            north = to;
+//            break;
+//        case DIR_NORTHEAST:
+//            northeast = to;
+//            break;
+//        case DIR_NORTHWEST:
+//            northwest = to;
+//            break;
+//        case DIR_SOUTH:
+//            south = to;
+//            break;
+//        case DIR_SOUTHEAST:
+//            southeast = to;
+//            break;
+//        case DIR_SOUTHWEST:
+//            southwest = to;
+//            break;
+//        case DIR_EAST:
+//            east = to;
+//            break;
+//        case DIR_WEST:
+//            west = to;
+//            break;
+//        case DIR_UP:
+//            up = to;
+//            break;
+//        case DIR_DOWN:
+//            down = to;
+//            break;
+//        case DIR_IN:
+//            in = to;
+//            break;
+//        case DIR_OUT:
+//            out = to;
+//            break;
+//        default:
+//            return false;
+//    }
+//    return true;
+//}
+
+void TRoom::setExitWeight(QString cmd, int w)
 {
-    if( north == id )
+    exitWeights[cmd] = w;
+}
+
+void TRoom::setId( int _id )
+{
+    id = _id;
+}
+
+void TRoom::setArea( int _areaID )
+{
+    area = _areaID;
+    TArea * pA = mpRoomDB->getArea( area );
+    if( !pA )
+    {
+        mpRoomDB->addArea( area );
+        pA = mpRoomDB->getArea( area );
+        if( !pA )
+        {
+            QString error = "TRoom::setArea(): No area created! requested area ID=%1. Note: area IDs must be > 0";
+            mpRoomDB->mpMap->logError(error);
+            return;
+        }
+    }
+
+    pA->addRoom( id );
+    pA->fast_ausgaengeBestimmen(id);
+    pA->fast_calcSpan(id);
+}
+
+bool TRoom::hasExit( int _id )
+{
+    if( north == _id )
         return true;
-    else if( south == id )
+    else if( south == _id )
         return true;
-    else if( northwest == id )
+    else if( northwest == _id )
         return true;
-    else if( northeast == id )
+    else if( northeast == _id )
         return true;
-    else if( southwest == id )
+    else if( southwest == _id )
         return true;
-    else if( southeast == id )
+    else if( southeast == _id )
         return true;
-    else if( east == id )
+    else if( east == _id )
         return true;
-    else if( west == id )
+    else if( west == _id )
         return true;
-    else if( up == id )
+    else if( up == _id )
         return true;
-    else if( down == id )
+    else if( down == _id )
         return true;
-    else if( out == id )
+    else if( out == _id )
         return true;
-    else if( in == id )
+    else if( in == _id )
         return true;
     else
         return false;
@@ -166,6 +265,7 @@ bool TRoom::hasSpecialExitLock(int to, QString cmd)
 
 void TRoom::addSpecialExit( int to, QString cmd )
 {
+    QString _cmd;
     // replace if this special exit exists, otherwise add
     QMapIterator<int, QString> it( other );
     while(it.hasNext() )
@@ -186,11 +286,11 @@ void TRoom::addSpecialExit( int to, QString cmd )
             }
 
             other.replace( to, _cmd );
-            return;
+            goto UPDATE_AREAS;
         }
     }
     // it doesnt exit -> add
-    QString _cmd;
+
     if( cmd.startsWith('0') || cmd.startsWith('1') )
     {
         _cmd = cmd;
@@ -201,13 +301,31 @@ void TRoom::addSpecialExit( int to, QString cmd )
         _cmd.append( cmd );
     }
     other.insertMulti( to, _cmd );
+
+UPDATE_AREAS: TArea * pA = mpRoomDB->getArea( getArea() );
+    if( pA )
+    {
+        pA->fast_ausgaengeBestimmen(getId());
+    }
+
 }
 
 
-void TRoom::removeSpecialExit( int to, QString cmd )
+
+
+
+void TRoom::removeAllSpecialExitsToRoom( int _id )
 {
-    other.remove(to, cmd.prepend("0"));
-    other.remove(to, cmd.prepend("1"));
+    QList<int> keyList = other.keys();
+    QList<QString> valList = other.values();
+    for( int i=0; i<keyList.size(); i++ )
+    {
+        if( keyList[i] == _id )
+        {
+            // guaranteed to be in synch according to Qt docs
+            other.remove(keyList[i], valList[i]);
+        }
+    }
 }
 
 void TRoom::calcRoomDimensions()
@@ -243,8 +361,115 @@ void TRoom::calcRoomDimensions()
     }
 }
 
+#include <QDataStream>
 
+bool TRoom::restore( QDataStream & ifs, int i, int version )
+{
 
+    id = i;
+    ifs >> area;
+    ifs >> x;
+    ifs >> y;
+    ifs >> z;
+    ifs >> north;
+    ifs >> northeast;
+    ifs >> east;
+    ifs >> southeast;
+    ifs >> south;
+    ifs >> southwest;
+    ifs >> west;
+    ifs >> northwest;
+    ifs >> up;
+    ifs >> down;
+    ifs >> in;
+    ifs >> out;
+    ifs >> environment;
+    ifs >> weight;
+
+    // force room weight >= 1 otherwise pathfinding choses random pathes.
+    if( weight < 1 )
+    {
+        weight = 1;
+    }
+
+    if( version < 8 )
+    {
+        float f1,f2,f3,f4;
+        ifs >> f1;//rooms[i]->xRot;
+        ifs >> f2;//rooms[i]->yRot;
+        ifs >> f3;//rooms[i]->zRot;
+        ifs >> f4;//rooms[i]->zoom;
+    }
+    ifs >> name;
+    ifs >> isLocked;
+    if( version >= 6 )
+    {
+        ifs >> other;
+    }
+    if( version >= 9 )
+    {
+        ifs >> c;
+    }
+    if( version >= 10 )
+    {
+        ifs >> userData;
+    }
+    if( version >= 11 )
+    {
+        ifs >> customLines;
+        ifs >> customLinesArrow;
+        ifs >> customLinesColor;
+        ifs >> customLinesStyle;
+        ifs >> exitLocks;
+    }
+    if( version >= 13 )
+    {
+        ifs >> exitStubs;
+    }
+    if( version >= 16 )
+    {
+        ifs >> exitWeights;
+        ifs >> doors;
+    }
+    calcRoomDimensions();
+}
+
+void TRoom::auditExits()
+{
+    if( ! mpRoomDB->getRoom(north) ) north = -1;
+    if( ! mpRoomDB->getRoom(south) ) south = -1;
+    if( ! mpRoomDB->getRoom(northwest) ) northwest = -1;
+    if( ! mpRoomDB->getRoom(northeast) ) northeast = -1;
+    if( ! mpRoomDB->getRoom(southwest) ) southwest = -1;
+    if( ! mpRoomDB->getRoom(southeast) ) southeast = -1;
+    if( ! mpRoomDB->getRoom(west) ) west = -1;
+    if( ! mpRoomDB->getRoom(east) ) east = -1;
+    if( ! mpRoomDB->getRoom(in) ) in = -1;
+    if( ! mpRoomDB->getRoom(out) ) out = -1;
+
+    AUDIT_SPECIAL_EXITS: QMapIterator<int, QString> it( other );
+    while( it.hasNext() )
+    {
+        it.next();
+        QString _cmd = it.value();
+        if( _cmd.size() <= 0 )
+        {
+            other.remove( it.key(), it.value() );
+            qDebug()<<"AUDIT_SPECIAL_EXITS: roomID:"<<id<<" REMOVING invalid special exit:"<<_cmd;
+            goto AUDIT_SPECIAL_EXITS;
+        }
+        else if( ! ( _cmd.startsWith('1') || _cmd.startsWith('0') ) )
+        {
+            QString _nc = it.value();
+            int _nk = it.key();
+            _nc.prepend('0');
+            other.remove( it.key(), it.value() );
+            other.insertMulti( _nk, _nc );
+            qDebug()<<"AUDIT_SPECIAL_EXITS: roomID:"<<id<<" PATCHING invalid special exit:"<<_cmd << " new:"<<_nc;
+            goto AUDIT_SPECIAL_EXITS;
+        }
+    }
+}
 
 
 

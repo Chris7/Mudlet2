@@ -127,8 +127,8 @@ TChar::TChar( const TChar & copy )
 
 TBuffer::TBuffer( Host * pH )
 : mLinkID            ( 0 )
-, mLinesLimit        ( 10000 )
-, mBatchDeleteSize   ( 1000 )
+, mLinesLimit        ( 1000 )
+, mBatchDeleteSize   ( 100 )
 , mUntriggered       ( 0 )
 , mWrapAt            ( 99999999 )
 , mWrapIndent        ( 0 )
@@ -819,6 +819,7 @@ inline int TBuffer::lookupColor( QString & s, int pos )
 
 void TBuffer::translateToPlainText( std::string & s )
 {
+    //cout << "TRANSLATE<"<<s<<">"<<endl;
     speedAppend = 0;
     speedTP = 0;
     int numCodes=0;
@@ -1903,28 +1904,51 @@ void TBuffer::translateToPlainText( std::string & s )
             }
             continue;
         }
-        mMudLine.append( ch );
-        TChar c( ! mIsDefaultColor && mBold ? fgColorLightR : fgColorR,
-                 ! mIsDefaultColor && mBold ? fgColorLightG : fgColorG,
-                 ! mIsDefaultColor && mBold ? fgColorLightB : fgColorB,
-                 bgColorR,
-                 bgColorG,
-                 bgColorB,
-                 mIsDefaultColor ? mBold : false,
-                 mItalics,
-                 mUnderline );
-
-        if( mMXP_LINK_MODE )
+        if( ch != '\t' )
         {
-            c.link = mLinkID;
-//            c.fgR = 0;
-//            c.fgG = 0;
-//            c.fgB = 255;
-            c.underline = true;
+            mMudLine.append( ch );
+            TChar c( ! mIsDefaultColor && mBold ? fgColorLightR : fgColorR,
+                     ! mIsDefaultColor && mBold ? fgColorLightG : fgColorG,
+                     ! mIsDefaultColor && mBold ? fgColorLightB : fgColorB,
+                     bgColorR,
+                     bgColorG,
+                     bgColorB,
+                     mIsDefaultColor ? mBold : false,
+                     mItalics,
+                     mUnderline );
+
+            if( mMXP_LINK_MODE )
+            {
+                c.link = mLinkID;
+    //            c.fgR = 0;
+    //            c.fgG = 0;
+    //            c.fgB = 255;
+                c.underline = true;
+            }
+
+
+            mMudBuffer.push_back( c );
         }
-
-
-        mMudBuffer.push_back( c );
+        else
+        {
+            int spaces = 8 - mMudLine.size() % 8;
+            QString tab;
+            for( int spi=0; spi<spaces; spi++ )
+            {
+                tab.append( ' ' );
+                TChar tab_c( ! mIsDefaultColor && mBold ? fgColorLightR : fgColorR,
+                         ! mIsDefaultColor && mBold ? fgColorLightG : fgColorG,
+                         ! mIsDefaultColor && mBold ? fgColorLightB : fgColorB,
+                         bgColorR,
+                         bgColorG,
+                         bgColorB,
+                         mIsDefaultColor ? mBold : false,
+                         mItalics,
+                         mUnderline );
+                mMudBuffer.push_back(tab_c);
+            }
+            mMudLine.append( tab );
+        }
         msPos++;
     }
 }
@@ -1969,6 +1993,7 @@ void TBuffer::append( QString & text,
     {
         if( text.at(i) == '\n' )
         {
+            log(size()-1, size()-1);
             std::deque<TChar> newLine;
             buffer.push_back( newLine );
             lineBuffer.push_back( QString() );
@@ -2630,7 +2655,8 @@ void TBuffer::paste( QPoint & P, TBuffer chunk )
         TChar format;
         if( y == -1 )
         {
-            wrap( y,mWrapAt, mWrapIndent, format );
+            //FIXME:
+            //wrap( y,mWrapAt, mWrapIndent, format );
         }
         else
         {
@@ -2678,7 +2704,7 @@ void TBuffer::appendBuffer( TBuffer chunk )
 
 int TBuffer::calcWrapPos( int line, int begin, int end )
 {
-    const QString lineBreaks = ",.- ";
+    const QString lineBreaks = ",.- \n";
     if( lineBuffer.size() < line ) return 0;
     int lineSize = static_cast<int>(lineBuffer[line].size())-1;
     if( lineSize < end )
@@ -2844,6 +2870,7 @@ inline int TBuffer::wrap( int startLine )
         dirty.push_back( true );
     }
 
+    log(startLine, startLine+tempList.size());
     //qDebug()<<"lB="<<lineBuffer.size()<<" pB="<<promptBuffer.size()<<" tB="<<timeBuffer.size()<<" pB="<<promptBuffer.size()<<" dB="<<dirty.size();
     //Q_ASSERT(!(lineBuffer.size() == promptBuffer.size() == timeBuffer.size() == dirty.size() ));
     return insertedLines > 0 ? insertedLines : 0;
@@ -2853,6 +2880,7 @@ inline int TBuffer::wrap( int startLine )
 // returns how many new lines have been inserted by the wrapping action
 int TBuffer::wrap( int startLine, int screenWidth, int indentSize, TChar & format )
 {
+    //FIXME:
     return 0;
 
     if( startLine < 0 ) return 0;
@@ -2967,6 +2995,48 @@ int TBuffer::wrap( int startLine, int screenWidth, int indentSize, TChar & forma
     return insertedLines > 0 ? insertedLines : 0;
 }
 
+void TBuffer::log( int from, int to )
+{
+
+    TBuffer * pB = &mpHost->mpConsole->buffer;
+    if( pB == this )
+    {
+        if( mpHost->mpConsole->mLogToLogFile )
+        {
+            if( from >= size() || from < 0 )
+            {
+                return;
+            }
+            if( to >= size() )
+            {
+                to = size()-1;
+            }
+            if( to < 0 )
+            {
+                return;
+            }
+            for( int i=from; i<=to; i++ )
+            {
+
+                QString toLog;
+                if( mpHost->mRawStreamDump )
+                {
+                    QPoint P1 = QPoint(0,i);
+                    QPoint P2 = QPoint( buffer[i].size(), i);
+                    toLog = bufferToHtml(P1, P2);
+                }
+                else
+                {
+                    toLog = lineBuffer[i];
+                    toLog.append("\n");
+                }
+                mpHost->mpConsole->mLogStream << toLog;
+            }
+            mpHost->mpConsole->mLogStream.flush();
+        }
+    }
+}
+
 // returns how many new lines have been inserted by the wrapping action
 int TBuffer::wrapLine( int startLine, int screenWidth, int indentSize, TChar & format )
 {
@@ -2980,8 +3050,8 @@ int TBuffer::wrapLine( int startLine, int screenWidth, int indentSize, TChar & f
     {
         if( i > startLine ) break; //only wrap one line of text
 
-        assert( static_cast<int>(buffer[i].size()) == lineBuffer[i].size() );
-        assert( static_cast<int>(buffer.size()) == promptBuffer.size() );
+        //assert( static_cast<int>(buffer[i].size()) == lineBuffer[i].size() );
+        //assert( static_cast<int>(buffer.size()) == promptBuffer.size() );
         std::deque<TChar> newLine;
         QString lineText;
 
@@ -3065,6 +3135,7 @@ int TBuffer::wrapLine( int startLine, int screenWidth, int indentSize, TChar & f
 
     if( lineCount < 1 )
     {
+        log( startLine, startLine );
         return 0;
     }
 
@@ -3092,6 +3163,7 @@ int TBuffer::wrapLine( int startLine, int screenWidth, int indentSize, TChar & f
         promptBuffer.insert( startLine+i, isPrompt );
         dirty.insert( startLine+i, true );
     }
+    log( startLine, startLine+tempList.size()-1 );
     //Q_ASSERT(!((lineBuffer.size()==promptBuffer.size()) && (lineBuffer.size()==timeBuffer.size()) && (lineBuffer.size() == dirty.size()) ));
     //qDebug()<<"lB="<<lineBuffer.size()<<" pB="<<promptBuffer.size()<<" tB="<<timeBuffer.size()<<" pB="<<promptBuffer.size()<<" dB="<<dirty.size();
     return insertedLines > 0 ? insertedLines : 0;

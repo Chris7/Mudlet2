@@ -715,7 +715,6 @@ void Host::raiseEvent( TEvent * pE )
     if( pE->mArgumentList.size() < 1 ) return;
     if( mEventHandlerMap.contains( pE->mArgumentList[0] ) )
     {
-        qDebug()<<"event:"<<pE->mArgumentList;
         QList<TScript *> scriptList = mEventHandlerMap[pE->mArgumentList[0]];
         for( int i=0; i<scriptList.size(); i++ )
         {
@@ -724,11 +723,9 @@ void Host::raiseEvent( TEvent * pE )
     }
     if( mAnonymousEventHandlerFunctions.contains( pE->mArgumentList[0] ) )
     {
-        qDebug()<<"event:"<<pE->mArgumentList;
         QStringList funList = mAnonymousEventHandlerFunctions[pE->mArgumentList[0]];
         for( int i=0; i<funList.size(); i++ )
         {
-            qDebug()<<"--> calling anonymous handler:"<<funList[i];
             mLuaInterpreter.callEventHandler( funList[i], pE );
         }
     }
@@ -826,7 +823,7 @@ bool Host::serialize()
         QMessageBox::critical( 0, "Profile Save Failed", "Failed to save "+mHostName+" to location "+filename_xml+" because of the following error: "+file_xml.errorString() );
     }
 
-    if( mpMap->rooms.size() > 10 )
+    if( mpMap->mpRoomDB->size() > 10 )
     {
         QFile file_map( filename_map );
         if ( file_map.open( QIODevice::WriteOnly ) )
