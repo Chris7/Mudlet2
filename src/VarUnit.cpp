@@ -56,7 +56,8 @@ void VarUnit::buildVarTree( QTreeWidgetItem * p, TVar * var, bool showHidden ){
                     break;
             }
             pItem->setIcon( 0, icon );
-            pItem->setToolTip(0, "Checked variables will be saved and loaded with your profile.");
+            if ( child->getValueType() != 6 && child->getValueType() != 5 ) // 6 is lua_tfunction, 5 is a table
+                pItem->setToolTip(0, "Checked variables will be saved and loaded with your profile.");
             wVars.insert( pItem, child );
             cList.append( pItem );
             if ( child->getValueType() == 5 )
