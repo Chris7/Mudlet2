@@ -4652,7 +4652,10 @@ void dlgTriggerEditor::saveVar(){
             break;
     }
     pItem->setIcon( 0, icon );
-    pItem->setToolTip(0, "Checked variables will be saved and loaded with your profile.");
+
+    if (var->getValueType() != 6 && var->getValueType() != 5) //6 is lua_tfunction, 5 is a table
+        pItem->setToolTip(0, "Checked variables will be saved and loaded with your profile.");
+
     slot_var_clicked(pItem,0);
 }
 
