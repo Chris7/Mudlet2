@@ -39,6 +39,9 @@
 #define DIR_DOWN 10
 #define DIR_IN 11
 #define DIR_OUT 12
+// Added to use for (TArea)->exits, replacing a different (incompatible) set of
+// #define(s) for Map file version 17 onwards
+#define DIR_OTHER 13
 
 class XMLimport;
 class XMLexport;
