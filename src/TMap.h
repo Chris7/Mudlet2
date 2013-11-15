@@ -61,7 +61,6 @@ public:
     bool noScaling;
 };
 
-
 class TMap
 {
 public:
@@ -94,6 +93,7 @@ public:
     void solveRoomCollision( int id, int creationDirection, bool PCheck=true );
     void setRoom( int );
     bool findPath( int from, int to );
+    bool findZonePath( int from, int to );
     bool gotoRoom( int );
     bool gotoRoom( int, int );
     void setView( float, float, float, float );
@@ -131,6 +131,9 @@ public:
     QList<int> conList;
     QMap<int, int> roomidToIndex;
     QMap<int, int> indexToRoomid;
+    QMap<int, int> roomidToAreaIndex;
+    QMap<int, int> areaIndexToRoomid;
+    QMap<int, QSet< int > > areaRoomList;
     int mPlausaOptOut;
 
     QMap<QString, int> pixNameTable;
@@ -141,9 +144,13 @@ public:
     typedef mygraph_t::edge_descriptor edge_descriptor;
     typedef mygraph_t::vertex_iterator vertex_iterator;
     typedef std::pair<int, int> edge;
+    list<vertex> zone_shortest_path;
     mygraph_t g;
+    mygraph_t area_graph;
     WeightMap weightmap;
+    WeightMap area_weightmap;
     std::vector<location> locations;
+    std::vector<location> areaLocations;
     bool mMapGraphNeedsUpdate;
     bool mNewMove;
     QMap<qint32, QMap<qint32, TMapLabel> > mapLabels;
