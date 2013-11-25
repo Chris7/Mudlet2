@@ -23,7 +23,7 @@ using namespace std;
 struct location
 {
   float y, x, z; // lat, long
-  int id, area, zone_node;
+  int id, area, zone_node, room_cost;
 };
 typedef float cost;
 
@@ -77,13 +77,13 @@ public:
   CostType operator()(Vertex u)
   {
       if (m_location[m_goal].area != m_location[u].area)
-          return 1;
+          return m_location[u].room_cost;
       if (m_location[m_goal].zone_node)
-          return 1;
+          return 1;//this is the special case of our zone map, we don't weight nodes here
       CostType dx = m_location[m_goal].x - m_location[u].x;
       CostType dy = m_location[m_goal].y - m_location[u].y;
       CostType dz = m_location[m_goal].z - m_location[u].z;
-      return ::sqrt(dx * dx + dy * dy + dz * dz);
+      return ::sqrt(dx * dx + dy * dy + dz * dz)+(double)m_location[u].room_cost;;
   }
 private:
   LocMap m_location;

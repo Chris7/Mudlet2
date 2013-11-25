@@ -512,6 +512,7 @@ void TMap::initGraph()
         l.id = pR->getId();
         l.area = pR->getArea();
         l.zone_node = 0;
+        l.room_cost = pR->getWeight();
         locations.push_back( l );
     }
     for(int i=0;i<locations.size();i++){
@@ -932,6 +933,8 @@ void TMap::initGraph()
             l.id = from;
             l.area = 1;
             l.zone_node = 1;
+            TRoom * aR = mpRoomDB->getRoom( from );
+            l.room_cost = aR->getWeight();
             areaLocations.push_back( l );
         }
     }
