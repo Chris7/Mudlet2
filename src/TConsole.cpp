@@ -2368,6 +2368,15 @@ TConsole * TConsole::createMiniConsole( QString & name, int x, int y, int width,
     }
 }
 
+void TConsole::createQML( QString & name, QString & source ){
+//    if ( mQMLMap.contains( name ) ){
+        QDeclarativeView *qmlView = new QDeclarativeView;
+        qmlView->setSource(QUrl::fromLocalFile(source));
+        QVBoxLayout *layout = new QVBoxLayout( mpMainFrame );
+        layout->addWidget(qmlView);
+//    }
+}
+
 TLabel * TConsole::createLabel( QString & name, int x, int y, int width, int height, bool fillBackground )
 {
     std::string key = name.toLatin1().data();

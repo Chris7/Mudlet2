@@ -38,6 +38,7 @@
 #include <QPlainTextEdit>
 #include <QTextDocumentFragment>
 #include <QPoint>
+#include <QDeclarativeView>
 #include "TBuffer.h"
 #include "Host.h"
 #include "TLabel.h"
@@ -154,6 +155,7 @@ public:
       int               getLastLineNumber();
       void              refresh();
       TLabel *          createLabel( QString & name, int x, int y, int width, int height, bool fillBackground );
+      void              createQML( QString & name, QString & source );
       TConsole *        createMiniConsole( QString & name, int x, int y, int width, int height );
       bool              createButton( QString & name, int x, int y, int width, int height, bool fillBackground );
       bool              showWindow( QString & name );
@@ -221,6 +223,7 @@ public:
       bool              mIsHighColorMode;
       bool              mIsSubConsole;
       std::map<std::string, TLabel *> mLabelMap;
+      QMap< QString, QDeclarativeView * > mQMLMap;
       QFile             mLogFile;
       QString           mLogFileName;
       QTextStream       mLogStream;

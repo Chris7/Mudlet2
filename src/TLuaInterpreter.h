@@ -290,6 +290,7 @@ public:
     static int resetStopWatch( lua_State * );
     static int createMiniConsole( lua_State * );
     static int createLabel( lua_State * );
+    static int createQML( lua_State *L );
     static int moveWindow( lua_State * );
     static int setTextFormat( lua_State * );
     static int setBackgroundImage( lua_State * );

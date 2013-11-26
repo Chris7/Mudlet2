@@ -1000,6 +1000,14 @@ bool mudlet::createMiniConsole( Host * pHost, QString & name, int x, int y, int 
     return false;
 }
 
+bool mudlet::createQML( Host * pHost, QString & name, QString & source )
+{
+    if( ! pHost ) return false;
+    if( ! pHost->mpConsole ) return false;
+    pHost->mpConsole->createQML( name, source );
+    return true;
+}
+
 bool mudlet::createLabel( Host * pHost, QString & name, int x, int y, int width, int height, bool fillBg )
 {
     if( ! pHost ) return false;

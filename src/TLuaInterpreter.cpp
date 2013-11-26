@@ -2314,6 +2314,15 @@ int TLuaInterpreter::createMiniConsole( lua_State *L )
     return 1;
 }
 
+int TLuaInterpreter::createQML( lua_State *L ){
+    QString name, source;
+    name = QString(lua_tostring(L, 1));
+    source = QString(lua_tostring(L, 2));
+    Host * pHost = TLuaInterpreter::luaInterpreterMap[L];
+    lua_pushboolean( L, mudlet::self()->createQML( pHost, name, source ) );
+    return 1;
+}
+
 int TLuaInterpreter::createLabel( lua_State *L )
 {
     string luaSendText="";
@@ -10576,6 +10585,7 @@ void TLuaInterpreter::initLuaGlobals()
     lua_register( pGlobalLua, "getNetworkLatency", TLuaInterpreter::getNetworkLatency );
     lua_register( pGlobalLua, "createMiniConsole", TLuaInterpreter::createMiniConsole );
     lua_register( pGlobalLua, "createLabel", TLuaInterpreter::createLabel );
+    lua_register( pGlobalLua, "createQML", TLuaInterpreter::createQML );
     lua_register( pGlobalLua, "hideWindow", TLuaInterpreter::hideUserWindow );
     lua_register( pGlobalLua, "showWindow", TLuaInterpreter::showUserWindow );
     lua_register( pGlobalLua, "createBuffer", TLuaInterpreter::createBuffer );
