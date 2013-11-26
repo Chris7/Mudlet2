@@ -2314,12 +2314,85 @@ int TLuaInterpreter::createMiniConsole( lua_State *L )
     return 1;
 }
 
-int TLuaInterpreter::createQML( lua_State *L ){
+int TLuaInterpreter::createQML( lua_State *L )
+{
     QString name, source;
+    if( ! lua_isstring( L, 1 ) )
+    {
+        lua_pushstring( L, "createLabel: wrong argument type" );
+        lua_error( L );
+        return 1;
+    }
+    else
+    {
+        name = QString(lua_tostring( L, 1 ));
+    }
+    int x,y,width,height;
+    bool floating=false;
+    if( ! lua_isstring( L, 2 ) )
+    {
+        lua_pushstring( L, "createLabel: wrong argument type" );
+        lua_error( L );
+        return 1;
+    }
+    else
+    {
+        source = QString(lua_tostring( L, 2 ));
+    }
+    if( ! lua_isnumber( L, 3 ) )
+    {
+        lua_pushstring( L, "createLabel: wrong argument type" );
+        lua_error( L );
+        return 1;
+    }
+    else
+    {
+        x = lua_tonumber( L, 3 );
+    }
+    if( ! lua_isnumber( L, 4 ) )
+    {
+        lua_pushstring( L, "createLabel: wrong argument type" );
+        lua_error( L );
+        return 1;
+    }
+    else
+    {
+        y = lua_tonumber( L, 4 );
+    }
+    if( ! lua_isnumber( L, 5 ) )
+    {
+        lua_pushstring( L, "createLabel: wrong argument type" );
+        lua_error( L );
+        return 1;
+    }
+    else
+    {
+        width = lua_tonumber( L, 5 );
+    }
+    if( ! lua_isnumber( L, 6 ) )
+    {
+        lua_pushstring( L, "createLabel: wrong argument type" );
+        lua_error( L );
+        return 1;
+    }
+    else
+    {
+        height = lua_tonumber( L, 6 );
+    }
+    if( ! lua_isboolean( L, 7 ) )
+    {
+        lua_pushstring( L, "createLabel: wrong argument type" );
+        lua_error( L );
+        return 1;
+    }
+    else
+    {
+        floating = lua_toboolean( L, 7 );
+    }
     name = QString(lua_tostring(L, 1));
     source = QString(lua_tostring(L, 2));
     Host * pHost = TLuaInterpreter::luaInterpreterMap[L];
-    lua_pushboolean( L, mudlet::self()->createQML( pHost, name, source ) );
+    lua_pushboolean( L, mudlet::self()->createQML( pHost, name, source, x, y, width, height, floating ) );
     return 1;
 }
 

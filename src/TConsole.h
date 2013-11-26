@@ -155,7 +155,7 @@ public:
       int               getLastLineNumber();
       void              refresh();
       TLabel *          createLabel( QString & name, int x, int y, int width, int height, bool fillBackground );
-      void              createQML( QString & name, QString & source );
+      void              createQML(QString & name, QString & source , int x, int y, int width, int height, bool floating);
       TConsole *        createMiniConsole( QString & name, int x, int y, int width, int height );
       bool              createButton( QString & name, int x, int y, int width, int height, bool fillBackground );
       bool              showWindow( QString & name );

@@ -51,6 +51,7 @@
 #include "dlgNotepad.h"
 #include <assert.h>
 #include "dlgMapper.h"
+#include <QDeclarativeError>
 
 using namespace std;
 
@@ -2368,13 +2369,62 @@ TConsole * TConsole::createMiniConsole( QString & name, int x, int y, int width,
     }
 }
 
-void TConsole::createQML( QString & name, QString & source ){
-//    if ( mQMLMap.contains( name ) ){
-        QDeclarativeView *qmlView = new QDeclarativeView;
+void TConsole::createQML( QString & name, QString & source, int x, int y, int width, int height, bool floating )
+{
+    QDeclarativeView *qmlView;
+    if ( mQMLMap.contains( name ) )
+    {
+        qmlView = mQMLMap[name];
+//        if ( qmlView->source() != QUrl::fromLocalFile(source) )
+//        {
+//            qmlView->deleteLater();
+//            if (floating)
+//                qmlView = new QDeclarativeView;
+//            else
+//                qmlView = new QDeclarativeView( mpMainFrame );
+//        }
+//        else
+//        {
+//            if (floating)
+//            {
+//                if (qmlView->parent())
+//                {
+//                    qDebug()<<"deleting old parent since we want floating now";
+//                    qmlView->deleteLater();
+//                    qmlView = new QDeclarativeView;
+//                }
+//            }
+//            else
+//            {
+//                if ( !qmlView->parent() )
+//                {
+//                    qmlView->deleteLater();
+//                    qmlView = new QDeclarativeView(mpMainFrame);
+//                }
+//            }
+//        }
         qmlView->setSource(QUrl::fromLocalFile(source));
-        QVBoxLayout *layout = new QVBoxLayout( mpMainFrame );
-        layout->addWidget(qmlView);
-//    }
+    }
+    else
+    {
+        if (floating)
+            qmlView = new QDeclarativeView;
+        else
+        {
+            qmlView = new QDeclarativeView(mpMainFrame);
+            qmlView->move(x,y);
+            qmlView->setBaseSize(width, height);
+        }
+        qmlView->setSource(QUrl::fromLocalFile(source));
+        mQMLMap[name] = qmlView;
+    }
+    qDebug()<<"errors in script";
+    QList<QDeclarativeError> errors = qmlView->errors();
+    for(int i=0;i<errors.size();i++){
+        QDeclarativeError err = errors[i];
+        qDebug()<<err.description();
+    }
+    qmlView->show();
 }
 
 TLabel * TConsole::createLabel( QString & name, int x, int y, int width, int height, bool fillBackground )
