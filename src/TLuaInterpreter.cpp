@@ -2396,6 +2396,43 @@ int TLuaInterpreter::createQML( lua_State *L )
     return 1;
 }
 
+int TLuaInterpreter::updateQML( lua_State *L )
+{
+    QString name, element, property;
+    QVariant value;
+    if ( !lua_isstring( L, 1 ) )
+    {
+        lua_pushstring( L, "updateQML: Name must be a string.");
+        lua_error( L );
+        return 1;
+    }
+    name = QString( lua_tostring( L, 1 ) );
+    if ( !lua_isstring( L, 2 ) )
+    {
+        lua_pushstring( L, "updateQML: Element must be a string.");
+        lua_error( L );
+        return 1;
+    }
+    element = QString( lua_tostring( L, 2 ) );
+    if ( !lua_isstring( L, 3 ) )
+    {
+        lua_pushstring( L, "updateQML: Property must be a string.");
+        lua_error( L );
+        return 1;
+    }
+    property = QString( lua_tostring( L, 3 ) );
+    if ( lua_gettop( L ) < 4 )
+    {
+        lua_pushstring( L, "updateQML: No 3rd argument provided.");
+        lua_error( L );
+        return 1;
+    }
+    value = QVariant(lua_tostring( L, 4 ));
+    Host * pHost = TLuaInterpreter::luaInterpreterMap[L];
+    lua_pushboolean(L, mudlet::self()->updateQML( pHost, name, element, property, value ));
+    return 1;
+}
+
 int TLuaInterpreter::createLabel( lua_State *L )
 {
     string luaSendText="";
@@ -10659,6 +10696,7 @@ void TLuaInterpreter::initLuaGlobals()
     lua_register( pGlobalLua, "createMiniConsole", TLuaInterpreter::createMiniConsole );
     lua_register( pGlobalLua, "createLabel", TLuaInterpreter::createLabel );
     lua_register( pGlobalLua, "createQML", TLuaInterpreter::createQML );
+    lua_register( pGlobalLua, "updateQML", TLuaInterpreter::updateQML );
     lua_register( pGlobalLua, "hideWindow", TLuaInterpreter::hideUserWindow );
     lua_register( pGlobalLua, "showWindow", TLuaInterpreter::showUserWindow );
     lua_register( pGlobalLua, "createBuffer", TLuaInterpreter::createBuffer );

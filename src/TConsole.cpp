@@ -52,6 +52,9 @@
 #include <assert.h>
 #include "dlgMapper.h"
 #include <QDeclarativeError>
+#include <QDeclarativeContext>
+#include <QDeclarativeEngine>
+#include <QDeclarativeComponent>
 
 using namespace std;
 
@@ -2369,41 +2372,19 @@ TConsole * TConsole::createMiniConsole( QString & name, int x, int y, int width,
     }
 }
 
+void TConsole::callLua(QString code)
+{
+    mpHost->getLuaInterpreter()->compileAndExecuteScript( code );
+}
+
 void TConsole::createQML( QString & name, QString & source, int x, int y, int width, int height, bool floating )
 {
     QDeclarativeView *qmlView;
     if ( mQMLMap.contains( name ) )
     {
         qmlView = mQMLMap[name];
-//        if ( qmlView->source() != QUrl::fromLocalFile(source) )
-//        {
-//            qmlView->deleteLater();
-//            if (floating)
-//                qmlView = new QDeclarativeView;
-//            else
-//                qmlView = new QDeclarativeView( mpMainFrame );
-//        }
-//        else
-//        {
-//            if (floating)
-//            {
-//                if (qmlView->parent())
-//                {
-//                    qDebug()<<"deleting old parent since we want floating now";
-//                    qmlView->deleteLater();
-//                    qmlView = new QDeclarativeView;
-//                }
-//            }
-//            else
-//            {
-//                if ( !qmlView->parent() )
-//                {
-//                    qmlView->deleteLater();
-//                    qmlView = new QDeclarativeView(mpMainFrame);
-//                }
-//            }
-//        }
-        qmlView->setSource(QUrl::fromLocalFile(source));
+        QDeclarativeEngine *e = qmlView->engine();
+        e->clearComponentCache();
     }
     else
     {
@@ -2415,16 +2396,49 @@ void TConsole::createQML( QString & name, QString & source, int x, int y, int wi
             qmlView->move(x,y);
             qmlView->setBaseSize(width, height);
         }
-        qmlView->setSource(QUrl::fromLocalFile(source));
         mQMLMap[name] = qmlView;
+        QDeclarativeContext *ct = qmlView->rootContext();
+        ct->setContextProperty("Lua", this);
     }
-    qDebug()<<"errors in script";
+    qmlView->setSource(QUrl::fromLocalFile(source));
     QList<QDeclarativeError> errors = qmlView->errors();
     for(int i=0;i<errors.size();i++){
         QDeclarativeError err = errors[i];
-        qDebug()<<err.description();
+        TDebug(QColor(Qt::white),QColor(Qt::red))<<"QML ERROR:"<<err.description();
     }
     qmlView->show();
+}
+
+bool TConsole::updateQML( QString & name, QString & element, QString & property, QVariant & value)
+{
+    if ( ! mQMLMap.contains(name) )
+    {
+        TDebug(QColor(Qt::white),QColor(Qt::red))<<"QML ERROR: No QML instance with name "<<name;
+        return false;
+    }
+    QDeclarativeView *qmlView = mQMLMap[name];
+    if ( !qmlView )
+    {
+        TDebug(QColor(Qt::white),QColor(Qt::red))<<"QML ERROR: No QML instance with name "<<name;
+        return false;
+    }
+    QObject *root = qmlView->rootObject();
+    QObject *child = root->findChild<QObject*>(element);
+    if ( !child )
+    {
+        TDebug(QColor(Qt::white),QColor(Qt::red))<<"QML ERROR: No QML element with name "<<name<<". Make sure objectName is defined.";
+        return false;
+    }
+    bool res = child->setProperty( property.toLatin1().data(), value);
+    if ( !res )
+    {
+        QList<QDeclarativeError> errors = qmlView->errors();
+        for(int i=0;i<errors.size();i++){
+            QDeclarativeError err = errors[i];
+            TDebug(QColor(Qt::white),QColor(Qt::red))<<"QML ERROR:"<<err.description();
+        }
+    }
+    return res;
 }
 
 TLabel * TConsole::createLabel( QString & name, int x, int y, int width, int height, bool fillBackground )

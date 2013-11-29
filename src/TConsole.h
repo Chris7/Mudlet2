@@ -156,6 +156,8 @@ public:
       void              refresh();
       TLabel *          createLabel( QString & name, int x, int y, int width, int height, bool fillBackground );
       void              createQML(QString & name, QString & source , int x, int y, int width, int height, bool floating);
+      bool              updateQML( QString & name, QString & element, QString & property, QVariant & value);
+      Q_INVOKABLE void  callLua(QString);
       TConsole *        createMiniConsole( QString & name, int x, int y, int width, int height );
       bool              createButton( QString & name, int x, int y, int width, int height, bool fillBackground );
       bool              showWindow( QString & name );
