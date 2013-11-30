@@ -75,6 +75,7 @@ public:
    bool                          createLabel( Host *, QString &, int, int, int, int, bool );
    bool                          createQML( Host *, QString &, QString &, int, int, int, int, bool );
    bool                          updateQML( Host *, QString &, QString &, QString &, QVariant &);
+   QString                       getQML( Host *, QString &, QString &, QString &);
    bool                          echoWindow( Host *, QString &, QString & );
    bool                          echoLink( Host * pHost, QString & name, QString & text, QStringList &, QStringList &, bool customFormat=false );
    void                          insertLink( Host *, QString &, QString, QStringList &, QStringList &, bool customFormat=false );

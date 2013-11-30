@@ -1016,6 +1016,13 @@ bool mudlet::updateQML( Host * pHost, QString & name, QString & element, QString
     return pHost->mpConsole->updateQML( name, element, property, value );
 }
 
+QString mudlet::getQML( Host * pHost, QString & name, QString & element, QString & property )
+{
+    if( ! pHost ) return false;
+    if( ! pHost->mpConsole ) return false;
+    return pHost->mpConsole->getQML( name, element, property );
+}
+
 bool mudlet::createLabel( Host * pHost, QString & name, int x, int y, int width, int height, bool fillBg )
 {
     if( ! pHost ) return false;

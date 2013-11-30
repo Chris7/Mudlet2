@@ -51,10 +51,10 @@
 #include "dlgNotepad.h"
 #include <assert.h>
 #include "dlgMapper.h"
-#include <QDeclarativeError>
-#include <QDeclarativeContext>
-#include <QDeclarativeEngine>
-#include <QDeclarativeComponent>
+#include <QtQml/QQmlError>
+#include <QtQml/QQmlContext>
+#include <QtQml/QQmlEngine>
+#include <QtQuick/QQuickItem>
 
 using namespace std;
 
@@ -2379,34 +2379,36 @@ void TConsole::callLua(QString code)
 
 void TConsole::createQML( QString & name, QString & source, int x, int y, int width, int height, bool floating )
 {
-    QDeclarativeView *qmlView;
+    QQuickView *qView;
     if ( mQMLMap.contains( name ) )
     {
-        qmlView = mQMLMap[name];
-        QDeclarativeEngine *e = qmlView->engine();
+        qView = mQMLMap[name];
+        QQmlEngine *e = qView->engine();
         e->clearComponentCache();
     }
     else
     {
-        if (floating)
-            qmlView = new QDeclarativeView;
-        else
+        qView = new QQuickView();
+        if ( !floating )
         {
-            qmlView = new QDeclarativeView(mpMainFrame);
-            qmlView->move(x,y);
-            qmlView->setBaseSize(width, height);
+            QWidget *container = QWidget::createWindowContainer( qView, mpMainFrame );
+            container->setGeometry(x, y, width, height);
+            container->show();
         }
-        mQMLMap[name] = qmlView;
-        QDeclarativeContext *ct = qmlView->rootContext();
+        qView->setBaseSize(QSize(width,height));
+        mQMLMap[name] = qView;
+        QQmlContext *ct = qView->rootContext();
         ct->setContextProperty("Lua", this);
     }
-    qmlView->setSource(QUrl::fromLocalFile(source));
-    QList<QDeclarativeError> errors = qmlView->errors();
+    qView->setSource(QUrl::fromLocalFile(source));
+    QList<QQmlError> errors = qView->errors();
     for(int i=0;i<errors.size();i++){
-        QDeclarativeError err = errors[i];
+        QQmlError err = errors[i];
         TDebug(QColor(Qt::white),QColor(Qt::red))<<"QML ERROR:"<<err.description();
     }
-    qmlView->show();
+    qView->show();
+    qDebug()<<QApplication::activeWindow();
+    qDebug()<<QApplication::focusWidget();
 }
 
 bool TConsole::updateQML( QString & name, QString & element, QString & property, QVariant & value)
@@ -2416,14 +2418,14 @@ bool TConsole::updateQML( QString & name, QString & element, QString & property,
         TDebug(QColor(Qt::white),QColor(Qt::red))<<"QML ERROR: No QML instance with name "<<name;
         return false;
     }
-    QDeclarativeView *qmlView = mQMLMap[name];
-    if ( !qmlView )
+    QQuickView *qView = mQMLMap[name];
+    if ( !qView )
     {
         TDebug(QColor(Qt::white),QColor(Qt::red))<<"QML ERROR: No QML instance with name "<<name;
         return false;
     }
-    QObject *root = qmlView->rootObject();
-    QObject *child = root->findChild<QObject*>(element);
+    QQuickItem *root = qView->rootObject();
+    QQuickItem *child = root->findChild<QQuickItem*>(element);
     if ( !child )
     {
         TDebug(QColor(Qt::white),QColor(Qt::red))<<"QML ERROR: No QML element with name "<<name<<". Make sure objectName is defined.";
@@ -2432,13 +2434,47 @@ bool TConsole::updateQML( QString & name, QString & element, QString & property,
     bool res = child->setProperty( property.toLatin1().data(), value);
     if ( !res )
     {
-        QList<QDeclarativeError> errors = qmlView->errors();
+        QList<QQmlError> errors = qView->errors();
         for(int i=0;i<errors.size();i++){
-            QDeclarativeError err = errors[i];
+            QQmlError err = errors[i];
             TDebug(QColor(Qt::white),QColor(Qt::red))<<"QML ERROR:"<<err.description();
         }
     }
     return res;
+}
+
+QString TConsole::getQML( QString & name, QString & element, QString & property )
+{
+    if ( ! mQMLMap.contains(name) )
+    {
+        TDebug(QColor(Qt::white),QColor(Qt::red))<<"QML ERROR: No QML instance with name "<<name;
+        return "";
+    }
+    QQuickView *qView = mQMLMap[name];
+    if ( !qView )
+    {
+        TDebug(QColor(Qt::white),QColor(Qt::red))<<"QML ERROR: No QML instance with name "<<name;
+        return "";
+    }
+    QObject *root = qView->rootObject();
+    QObject *child = root->findChild<QObject*>(element);
+    if ( !child )
+    {
+        TDebug(QColor(Qt::white),QColor(Qt::red))<<"QML ERROR: No QML element with name "<<name<<". Make sure objectName is defined.";
+        return "";
+    }
+    QString value = child->property( property.toLatin1().data() ).toString();
+    qDebug()<<child<<property<<value;
+    if ( value.isEmpty() )
+    {
+        QList<QQmlError> errors = qView->errors();
+        for(int i=0;i<errors.size();i++){
+            QQmlError err = errors[i];
+            TDebug(QColor(Qt::white),QColor(Qt::red))<<"QML ERROR:"<<err.description();
+        }
+        return "";
+    }
+    return value;
 }
 
 TLabel * TConsole::createLabel( QString & name, int x, int y, int width, int height, bool fillBackground )

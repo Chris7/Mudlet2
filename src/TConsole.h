@@ -38,7 +38,7 @@
 #include <QPlainTextEdit>
 #include <QTextDocumentFragment>
 #include <QPoint>
-#include <QDeclarativeView>
+#include <QtQuick/QQuickView>
 #include "TBuffer.h"
 #include "Host.h"
 #include "TLabel.h"
@@ -157,6 +157,7 @@ public:
       TLabel *          createLabel( QString & name, int x, int y, int width, int height, bool fillBackground );
       void              createQML(QString & name, QString & source , int x, int y, int width, int height, bool floating);
       bool              updateQML( QString & name, QString & element, QString & property, QVariant & value);
+      QString           getQML( QString & name, QString & element, QString & property );
       Q_INVOKABLE void  callLua(QString);
       TConsole *        createMiniConsole( QString & name, int x, int y, int width, int height );
       bool              createButton( QString & name, int x, int y, int width, int height, bool fillBackground );
@@ -225,7 +226,7 @@ public:
       bool              mIsHighColorMode;
       bool              mIsSubConsole;
       std::map<std::string, TLabel *> mLabelMap;
-      QMap< QString, QDeclarativeView * > mQMLMap;
+      QMap< QString, QQuickView * > mQMLMap;
       QFile             mLogFile;
       QString           mLogFileName;
       QTextStream       mLogStream;

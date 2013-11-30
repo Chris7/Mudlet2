@@ -1,7 +1,6 @@
- import QtQuick 1.0
+ import QtQuick 2.0
 
  Rectangle {
-     objectName: rect
      id: page
      width: 500; height: 200
      color: "lightgray"
@@ -20,4 +19,9 @@
 		anchors.fill: parent
 		onClicked: Lua.callLua("echo([["+helloText.text+"]])")
 	 }
+	 
+	Gauge {
+		x: 30
+		y: 10
+	}
  }
