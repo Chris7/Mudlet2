@@ -2319,7 +2319,7 @@ int TLuaInterpreter::createQML( lua_State *L )
     QString name, source;
     if( ! lua_isstring( L, 1 ) )
     {
-        lua_pushstring( L, "createLabel: wrong argument type" );
+        lua_pushfstring( L, "createQML: bad argument #1 (string expected, got %s)", luaL_typename(L, 1) );
         lua_error( L );
         return 1;
     }
@@ -2331,7 +2331,7 @@ int TLuaInterpreter::createQML( lua_State *L )
     bool floating=false;
     if( ! lua_isstring( L, 2 ) )
     {
-        lua_pushstring( L, "createLabel: wrong argument type" );
+        lua_pushfstring( L, "createQML: bad argument #2 (string expected, got %s)", luaL_typename(L, 1) );
         lua_error( L );
         return 1;
     }
@@ -2341,7 +2341,7 @@ int TLuaInterpreter::createQML( lua_State *L )
     }
     if( ! lua_isnumber( L, 3 ) )
     {
-        lua_pushstring( L, "createLabel: wrong argument type" );
+        lua_pushfstring( L, "createQML: bad argument #3 (number expected, got %s)", luaL_typename(L, 1) );
         lua_error( L );
         return 1;
     }
@@ -2351,7 +2351,7 @@ int TLuaInterpreter::createQML( lua_State *L )
     }
     if( ! lua_isnumber( L, 4 ) )
     {
-        lua_pushstring( L, "createLabel: wrong argument type" );
+        lua_pushfstring( L, "createQML: bad argument #4 (number expected, got %s)", luaL_typename(L, 1) );
         lua_error( L );
         return 1;
     }
@@ -2361,7 +2361,7 @@ int TLuaInterpreter::createQML( lua_State *L )
     }
     if( ! lua_isnumber( L, 5 ) )
     {
-        lua_pushstring( L, "createLabel: wrong argument type" );
+        lua_pushfstring( L, "createQML: bad argument #5 (number expected, got %s)", luaL_typename(L, 1) );
         lua_error( L );
         return 1;
     }
@@ -2371,7 +2371,7 @@ int TLuaInterpreter::createQML( lua_State *L )
     }
     if( ! lua_isnumber( L, 6 ) )
     {
-        lua_pushstring( L, "createLabel: wrong argument type" );
+        lua_pushfstring( L, "createQML: bad argument #6 (number expected, got %s)", luaL_typename(L, 1) );
         lua_error( L );
         return 1;
     }
@@ -2381,7 +2381,7 @@ int TLuaInterpreter::createQML( lua_State *L )
     }
     if( ! lua_isboolean( L, 7 ) )
     {
-        lua_pushstring( L, "createLabel: wrong argument type" );
+        lua_pushfstring( L, "createQML: bad argument #7 (boolean expected, got %s)", luaL_typename(L, 1) );
         lua_error( L );
         return 1;
     }
