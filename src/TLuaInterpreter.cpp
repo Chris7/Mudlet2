@@ -2379,16 +2379,21 @@ int TLuaInterpreter::createQML( lua_State *L )
     {
         height = lua_tonumber( L, 6 );
     }
-    if( ! lua_isboolean( L, 7 ) )
+
+    if( lua_gettop( L ) >= 7 )
     {
-        lua_pushfstring( L, "createQML: bad argument #7 (boolean expected, got %s)", luaL_typename(L, 1) );
-        lua_error( L );
-        return 1;
+        if( ! lua_isboolean( L, 7 ) )
+        {
+            lua_pushfstring( L, "createQML: bad argument #7 (boolean expected, got %s)", luaL_typename(L, 1) );
+            lua_error( L );
+            return 1;
+        }
+        else
+        {
+            floating = lua_toboolean( L, 7 );
+        }
     }
-    else
-    {
-        floating = lua_toboolean( L, 7 );
-    }
+
     name = QString(lua_tostring(L, 1));
     source = QString(lua_tostring(L, 2));
     Host * pHost = TLuaInterpreter::luaInterpreterMap[L];
