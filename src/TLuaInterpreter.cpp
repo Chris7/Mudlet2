@@ -274,6 +274,19 @@ int TLuaInterpreter::dirToNumber( lua_State * L, int position )
     return 0;
 }
 
+lua_State * TLuaInterpreter::getLuaState( Host * pHost )
+{
+    std::map<lua_State *, Host *>::iterator iter;
+    for( iter = luaInterpreterMap.begin(); iter != luaInterpreterMap.end(); ++iter )
+    {
+        if ( iter->second == pHost )
+        {
+            return iter->first;
+        }
+    }
+    return 0;
+}
+
 int TLuaInterpreter::denyCurrentSend( lua_State * L )
 {
     Host * pHost = TLuaInterpreter::luaInterpreterMap[L];
@@ -2319,7 +2332,7 @@ int TLuaInterpreter::createQML( lua_State *L )
     QString name, source;
     if( ! lua_isstring( L, 1 ) )
     {
-        lua_pushstring( L, "createLabel: wrong argument type" );
+        lua_pushfstring( L, "createQML: bad argument #1 (string expected, got %s)", luaL_typename( L, 1) );
         lua_error( L );
         return 1;
     }
@@ -2331,7 +2344,7 @@ int TLuaInterpreter::createQML( lua_State *L )
     bool floating=false;
     if( ! lua_isstring( L, 2 ) )
     {
-        lua_pushstring( L, "createLabel: wrong argument type" );
+        lua_pushfstring( L, "createQML: bad argument #2 (string expected, got %s)", luaL_typename( L, 2) );
         lua_error( L );
         return 1;
     }
@@ -2341,7 +2354,7 @@ int TLuaInterpreter::createQML( lua_State *L )
     }
     if( ! lua_isnumber( L, 3 ) )
     {
-        lua_pushstring( L, "createLabel: wrong argument type" );
+        lua_pushfstring( L, "createQML: bad argument #3 (number expected, got %s)", luaL_typename( L, 3) );
         lua_error( L );
         return 1;
     }
@@ -2351,7 +2364,7 @@ int TLuaInterpreter::createQML( lua_State *L )
     }
     if( ! lua_isnumber( L, 4 ) )
     {
-        lua_pushstring( L, "createLabel: wrong argument type" );
+        lua_pushfstring( L, "createQML: bad argument #4 (number expected, got %s)", luaL_typename( L, 4) );
         lua_error( L );
         return 1;
     }
@@ -2361,7 +2374,7 @@ int TLuaInterpreter::createQML( lua_State *L )
     }
     if( ! lua_isnumber( L, 5 ) )
     {
-        lua_pushstring( L, "createLabel: wrong argument type" );
+        lua_pushfstring( L, "createQML: bad argument #5 (number expected, got %s)", luaL_typename( L, 5) );
         lua_error( L );
         return 1;
     }
@@ -2371,7 +2384,7 @@ int TLuaInterpreter::createQML( lua_State *L )
     }
     if( ! lua_isnumber( L, 6 ) )
     {
-        lua_pushstring( L, "createLabel: wrong argument type" );
+        lua_pushfstring( L, "createQML: bad argument #6 (number expected, got %s)", luaL_typename( L, 6) );
         lua_error( L );
         return 1;
     }
@@ -2379,15 +2392,16 @@ int TLuaInterpreter::createQML( lua_State *L )
     {
         height = lua_tonumber( L, 6 );
     }
-    if( ! lua_isboolean( L, 7 ) )
+    if( lua_gettop( L ) >= 7 )
     {
-        lua_pushstring( L, "createLabel: wrong argument type" );
-        lua_error( L );
-        return 1;
-    }
-    else
-    {
-        floating = lua_toboolean( L, 7 );
+        if ( ! lua_isboolean( L, 7 ) )
+        {
+            lua_pushfstring( L, "createQML: bad argument #7 (boolean expected, got %s)", luaL_typename( L, 7) );
+            lua_error( L );
+            return 1;
+        }
+        else
+            floating = lua_toboolean( L, 7 );
     }
     name = QString(lua_tostring(L, 1));
     source = QString(lua_tostring(L, 2));
@@ -2423,7 +2437,7 @@ int TLuaInterpreter::updateQML( lua_State *L )
     property = QString( lua_tostring( L, 3 ) );
     if ( lua_gettop( L ) < 4 )
     {
-        lua_pushstring( L, "updateQML: No 3rd argument provided.");
+        lua_pushstring( L, "updateQML: No value argument provided.");
         lua_error( L );
         return 1;
     }
@@ -2458,7 +2472,9 @@ int TLuaInterpreter::getQML( lua_State *L )
     }
     property = QString( lua_tostring( L, 3 ) );
     Host * pHost = TLuaInterpreter::luaInterpreterMap[L];
-    lua_pushstring(L, mudlet::self()->getQML( pHost, name, element, property ).toLatin1().data() );
+    QString res = mudlet::self()->getQML( pHost, name, element, property );
+    if ( res != 0 )
+        lua_pushstring(L, res.toLatin1().data() );
     return 1;
 }
 

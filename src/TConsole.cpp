@@ -2392,6 +2392,7 @@ void TConsole::createQML( QString & name, QString & source, int x, int y, int wi
         if ( !floating )
         {
             QWidget *container = QWidget::createWindowContainer( qView, mpMainFrame );
+            container->setAttribute( Qt::WA_DeleteOnClose );
             container->setGeometry(x, y, width, height);
             container->show();
         }
@@ -2407,8 +2408,6 @@ void TConsole::createQML( QString & name, QString & source, int x, int y, int wi
         TDebug(QColor(Qt::white),QColor(Qt::red))<<"QML ERROR:"<<err.description();
     }
     qView->show();
-    qDebug()<<QApplication::activeWindow();
-    qDebug()<<QApplication::focusWidget();
 }
 
 bool TConsole::updateQML( QString & name, QString & element, QString & property, QVariant & value)
@@ -2447,34 +2446,54 @@ QString TConsole::getQML( QString & name, QString & element, QString & property 
 {
     if ( ! mQMLMap.contains(name) )
     {
-        TDebug(QColor(Qt::white),QColor(Qt::red))<<"QML ERROR: No QML instance with name "<<name;
-        return "";
+        lua_State *L = mpHost->getLuaInterpreter()->getLuaState( mpHost );
+        if ( L )
+        {
+            lua_pushfstring( L, "QML ERROR: No QML instance with name %s", name.toLatin1().data() );
+            lua_error( L );
+        }
+        return 0;
     }
     QQuickView *qView = mQMLMap[name];
     if ( !qView )
     {
-        TDebug(QColor(Qt::white),QColor(Qt::red))<<"QML ERROR: No QML instance with name "<<name;
-        return "";
+        lua_State *L = mpHost->getLuaInterpreter()->getLuaState( mpHost );
+        if ( L )
+        {
+            lua_pushfstring( L, "QML ERROR: No QML instance with name %s", name.toLatin1().data() );
+            lua_error( L );
+        }
+        return 0;
     }
     QObject *root = qView->rootObject();
     QObject *child = root->findChild<QObject*>(element);
     if ( !child )
     {
-        TDebug(QColor(Qt::white),QColor(Qt::red))<<"QML ERROR: No QML element with name "<<name<<". Make sure objectName is defined.";
-        return "";
+        lua_State *L = mpHost->getLuaInterpreter()->getLuaState( mpHost );
+        if ( L )
+        {
+            lua_pushfstring( L, "QML ERROR: No QML element with name %s, make sure objectName is defined.", element.toLatin1().data() );
+            lua_error( L );
+        }
+        return 0;
     }
-    QString value = child->property( property.toLatin1().data() ).toString();
-    qDebug()<<child<<property<<value;
-    if ( value.isEmpty() )
+    QVariant value = child->property( property.toLatin1().data() );
+    if ( ! value.isValid() )
     {
         QList<QQmlError> errors = qView->errors();
-        for(int i=0;i<errors.size();i++){
-            QQmlError err = errors[i];
-            TDebug(QColor(Qt::white),QColor(Qt::red))<<"QML ERROR:"<<err.description();
+        lua_State *L = mpHost->getLuaInterpreter()->getLuaState( mpHost );
+        if ( L )
+        {
+            for(int i=0;i<errors.size();i++){
+                QQmlError err = errors[i];
+                lua_pushfstring( L, "QML ERROR: %s", err.description().toLatin1().data() );
+                lua_error( L );
+            }
+            lua_pushnil( L );
         }
-        return "";
+        return 0;
     }
-    return value;
+    return value.toString();
 }
 
 TLabel * TConsole::createLabel( QString & name, int x, int y, int width, int height, bool fillBackground )
