@@ -4,24 +4,31 @@
      id: page
      width: 500; height: 200
      color: "lightgray"
-
-     Text {
-         id: helloText
-		 objectName: "helloText"
-         text: "Hello wod!"
-         y: 30
-         anchors.horizontalCenter: page.horizontalCenter
-         font.pointSize: 24; font.bold: true
-     }
-
-     MouseArea {
-		id: mouseArea
-		anchors.fill: parent
-		onClicked: Lua.callLua("echo([["+helloText.text+"]])")
-	 }
 	 
-	Gauge {
-		x: 30
-		y: 10
+    HGauge {
+        id: hgauge1
+        x: 0
+        y: 150
+      width: 500
+      height: 50
+      anchors.horizontalCenter: parent.horizontalCenter
+      anchors.right: parent.right
+      anchors.bottom: parent.bottom
+      anchors.left: parent.left
+      gaugeText: "HP"
 	}
+
+ VGauge {
+     id: vgauge1
+     x: 0
+     y: 0
+     width: 50
+     height: 144
+     anchors.bottomMargin: 6
+     anchors.verticalCenter: parent.verticalCenter
+     anchors.left: parent.left
+     anchors.bottom: hgauge1.top
+     anchors.top: parent.top
+     gaugeText: "SP"
+ }
  }
