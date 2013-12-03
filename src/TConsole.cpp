@@ -2380,13 +2380,24 @@ void TConsole::callLua(QString code)
 void TConsole::createQML( QString & name, QString & source, int x, int y, int width, int height, bool floating )
 {
     QQuickView *qView;
+    bool reCreate = false;
     if ( mQMLMap.contains( name ) )
     {
         qView = mQMLMap[name];
-        QQmlEngine *e = qView->engine();
-        e->clearComponentCache();
+        if ( ( qView->parent() && floating ) ||
+             ( !qView->parent() && !floating ) )
+        {
+            //it's docked and we want it floating or
+            qView->deleteLater();
+            reCreate = true;
+        }
+        else
+        {
+            QQmlEngine *e = qView->engine();
+            e->clearComponentCache();
+        }
     }
-    else
+    if ( ! mQMLMap.contains( name ) || reCreate )
     {
         qView = new QQuickView();
         if ( !floating )
