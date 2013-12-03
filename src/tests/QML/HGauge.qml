@@ -9,6 +9,7 @@ Item {
     property string backColor: "#aa3232"
     property string backBorderColor: "#000000"
     property string frontBorderColor: "#000000"
+    property string onClick: ""
 
 	Rectangle {
         id: gaugeBack
@@ -58,5 +59,6 @@ Item {
         y: 0
         width: parent.width
         height: parent.height
+        onClicked: Lua.callLua(parent.onClick)
     }
 }

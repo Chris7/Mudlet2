@@ -11,11 +11,8 @@
         y: 150
       width: 500
       height: 50
-      anchors.horizontalCenter: parent.horizontalCenter
-      anchors.right: parent.right
-      anchors.bottom: parent.bottom
-      anchors.left: parent.left
       gaugeText: "HP"
+      onClick: "if (hp < hpmax*50/100) then echo([[you might want to drink something]]) end"
 	}
 
  VGauge {
@@ -24,11 +21,6 @@
      y: 0
      width: 50
      height: 144
-     anchors.bottomMargin: 6
-     anchors.verticalCenter: parent.verticalCenter
-     anchors.left: parent.left
-     anchors.bottom: hgauge1.top
-     anchors.top: parent.top
      gaugeText: "SP"
  }
  }
