@@ -1018,8 +1018,8 @@ bool mudlet::updateQML( Host * pHost, QString & name, QString & element, QString
 
 QString mudlet::getQML( Host * pHost, QString & name, QString & element, QString & property )
 {
-    if( ! pHost ) return false;
-    if( ! pHost->mpConsole ) return false;
+    if( ! pHost ) return 0;
+    if( ! pHost->mpConsole ) return 0;
     return pHost->mpConsole->getQML( name, element, property );
 }
 
