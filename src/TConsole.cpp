@@ -2379,7 +2379,7 @@ void TConsole::callLua(QString code)
 
 void TConsole::createQML( QString & name, QString & source, int x, int y, int width, int height, bool floating )
 {
-    QQuickView *qView;
+    QQuickView *qView = new QQuickView();
     bool reCreate = false;
     if ( mQMLMap.contains( name ) )
     {
