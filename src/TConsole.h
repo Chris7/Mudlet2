@@ -95,6 +95,7 @@ Q_OBJECT
 public:
 
                         TConsole( Host *, bool isDebugConsole, QWidget * parent=0 );
+                        ~TConsole();
       void              reset();
       void              resetMainConsole();
       void              echoUserWindow( QString & );
@@ -192,6 +193,9 @@ public:
       void              logger_set_text_properties( QString );
       QString           assemble_html_font_specs();
       QSize             getMainWindowSize() const;  // Returns the size of the main buffer area (excluding the command line and toolbars).
+      void              destroyQML();
+      QWidget *         getQMLWindow( QString );
+      QQuickView *      getQMLView( QString );
 
       Host *            mpHost;
 
@@ -227,6 +231,7 @@ public:
       bool              mIsSubConsole;
       std::map<std::string, TLabel *> mLabelMap;
       QMap< QString, QQuickView * > mQMLMap;
+      QMap< QString, QWidget * > mQMLWindowMap;
       QFile             mLogFile;
       QString           mLogFileName;
       QTextStream       mLogStream;

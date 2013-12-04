@@ -587,6 +587,22 @@ TConsole::TConsole( Host * pH, bool isDebugConsole, QWidget * parent )
 
 }
 
+TConsole::~TConsole()
+{
+//    for( QMap<QString, QWidget *>::iterator it = mQMLWindowMap.begin(); it != mQMLWindowMap.end(); )
+//    {
+//        it.value()->close();
+//        it = mQMLWindowMap.erase(it);
+//    }
+//    for( QMap<QString, QQuickView *>::iterator it = mQMLMap.begin(); it != mQMLMap.end(); )
+//    {
+//        it.value()->close();
+//        it = mQMLMap.erase(it);
+//    }
+//    mQMLWindowMap.clear();
+//    mQMLMap.clear();
+}
+
 void TConsole::setLabelStyleSheet( std::string & buf, std::string & sh )
 {
     std::string key = buf;
@@ -2380,38 +2396,21 @@ void TConsole::callLua(QString code)
 void TConsole::createQML( QString & name, QString & source, int x, int y, int width, int height, bool floating )
 {
     QQuickView *qView;
-    bool reCreate = false;
     if ( mQMLMap.contains( name ) )
+        return;
+    qView = new QQuickView();
+    if ( !floating )
     {
-        qView = mQMLMap[name];
-        if ( ( qView->parent() && floating ) ||
-             ( !qView->parent() && !floating ) )
-        {
-            //it's docked and we want it floating or
-            qView->deleteLater();
-            reCreate = true;
-        }
-        else
-        {
-            QQmlEngine *e = qView->engine();
-            e->clearComponentCache();
-        }
+        QWidget *container = QWidget::createWindowContainer( qView );
+        container->setParent( mpMainFrame );
+        //container->setAttribute( Qt::WA_DeleteOnClose );
+        container->setGeometry(x, y, width, height);
+        container->show();
     }
-    if ( ! mQMLMap.contains( name ) || reCreate )
-    {
-        qView = new QQuickView();
-        if ( !floating )
-        {
-            QWidget *container = QWidget::createWindowContainer( qView, mpMainFrame );
-            container->setAttribute( Qt::WA_DeleteOnClose );
-            container->setGeometry(x, y, width, height);
-            container->show();
-        }
-        qView->setBaseSize(QSize(width,height));
-        mQMLMap[name] = qView;
-        QQmlContext *ct = qView->rootContext();
-        ct->setContextProperty("Lua", this);
-    }
+    qView->setBaseSize(QSize(width,height));
+    mQMLMap[name] = qView;
+    QQmlContext *ct = qView->rootContext();
+    ct->setContextProperty("Lua", this);
     qView->setSource(QUrl::fromLocalFile(source));
     QList<QQmlError> errors = qView->errors();
     for(int i=0;i<errors.size();i++){
@@ -2505,6 +2504,20 @@ QString TConsole::getQML( QString & name, QString & element, QString & property 
         return 0;
     }
     return value.toString();
+}
+
+QWidget * TConsole::getQMLWindow( QString name )
+{
+    if ( mQMLWindowMap.contains( name ) )
+        return mQMLWindowMap[name];
+    return 0;
+}
+
+QQuickView * TConsole::getQMLView( QString name )
+{
+    if ( mQMLMap.contains( name ) )
+        return mQMLMap[name];
+    return 0;
 }
 
 TLabel * TConsole::createLabel( QString & name, int x, int y, int width, int height, bool fillBackground )
