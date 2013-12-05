@@ -260,4 +260,10 @@ TEMPLATE = app
 TARGET = mudlet
 RESOURCES = mudlet_alpha.qrc
 
+OTHER_FILES += \
+    tests/QML/VGauge.qml \
+    tests/QML/test.qml \
+    tests/QML/HGauge.qml \
+    tests/QML/Button.qml
+
 

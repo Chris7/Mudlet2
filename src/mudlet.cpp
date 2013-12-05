@@ -862,6 +862,10 @@ void mudlet::addConsoleForNewHost( Host * pH )
     mHostConsoleMap[mpCurrentActiveHost] = miniConsoleMap;
     QMap<QString, TLabel *> labelMap;
     mHostLabelMap[mpCurrentActiveHost] = labelMap;
+    QMap<QString, QQuickView * > viewMap;
+    mHostQMLMap[mpCurrentActiveHost] = viewMap;
+    QMap<QString, QWidget * > windowMap;
+    mHostQMLWindowMap[mpCurrentActiveHost] = windowMap;
     mpCurrentActiveHost->mpConsole->show();
     mpCurrentActiveHost->mpConsole->repaint();
     mpCurrentActiveHost->mpConsole->refresh();
