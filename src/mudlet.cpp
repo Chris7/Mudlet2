@@ -1005,8 +1005,7 @@ bool mudlet::createQML( Host * pHost, QString & name, QString & source, int x, i
 {
     if( ! pHost ) return false;
     if( ! pHost->mpConsole ) return false;
-    pHost->mpConsole->createQML( name, source, x, y, width, height, floating );
-    return true;
+    return pHost->mpConsole->createQML( name, source, x, y, width, height, floating );
 }
 
 bool mudlet::updateQML( Host * pHost, QString & name, QString & element, QString & property, QVariant & value)

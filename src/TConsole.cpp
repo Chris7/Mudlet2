@@ -2377,7 +2377,7 @@ void TConsole::callLua(QString code)
     mpHost->getLuaInterpreter()->compileAndExecuteScript( code );
 }
 
-void TConsole::createQML( QString & name, QString & source, int x, int y, int width, int height, bool floating )
+bool TConsole::createQML( QString & name, QString & source, int x, int y, int width, int height, bool floating )
 {
     QQuickView *qView = new QQuickView();
     bool reCreate = false;
@@ -2399,6 +2399,11 @@ void TConsole::createQML( QString & name, QString & source, int x, int y, int wi
     }
     if ( ! mQMLMap.contains( name ) || reCreate )
     {
+        // check if the file is available and readable
+        QFileInfo sourcefileinfo(source);
+        if ( !sourcefileinfo.exists() || !sourcefileinfo.isReadable() )
+            return false;
+
         qView = new QQuickView();
         if ( !floating )
         {
@@ -2419,6 +2424,7 @@ void TConsole::createQML( QString & name, QString & source, int x, int y, int wi
         TDebug(QColor(Qt::white),QColor(Qt::red))<<"QML ERROR:"<<err.description();
     }
     qView->show();
+    return true;
 }
 
 bool TConsole::updateQML( QString & name, QString & element, QString & property, QVariant & value)
