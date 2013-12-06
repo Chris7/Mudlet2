@@ -74,6 +74,7 @@ public:
    bool                          createMiniConsole( Host *, QString &, int, int, int, int );
    bool                          createLabel( Host *, QString &, int, int, int, int, bool );
    bool                          createQML( Host *, QString &, QString &, int, int, int, int, bool );
+   void                          removeQML( Host *, QString & );
    bool                          updateQML( Host *, QString &, QString &, QString &, QVariant &);
    QString                       getQML( Host *, QString &, QString &, QString &);
    bool                          echoWindow( Host *, QString &, QString & );

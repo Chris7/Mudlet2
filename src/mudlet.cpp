@@ -1026,6 +1026,24 @@ bool mudlet::createQML( Host * pHost, QString & name, QString & source, int x, i
     return false;
 }
 
+void mudlet::removeQML( Host * pHost, QString & name )
+{
+    if( ! pHost ) return;
+    if( ! pHost->mpConsole ) return;
+    QMap<QString, QQuickView *> &viewMap = mHostQMLMap[pHost];
+    QMap<QString, QWidget *> &windowMap = mHostQMLWindowMap[pHost];
+    QWidget * w = pHost->mpConsole->getQMLWindow( name );
+    QQuickView * view = pHost->mpConsole->getQMLView( name );
+    if ( view != 0 )
+        view->deleteLater();
+    if ( w != 0 )
+        w->deleteLater();
+    viewMap.remove( name );
+    windowMap.remove( name );
+    pHost->mpConsole->mQMLMap.remove( name );
+    pHost->mpConsole->mQMLWindowMap.remove( name );
+}
+
 bool mudlet::updateQML( Host * pHost, QString & name, QString & element, QString & property, QVariant & value)
 {
     if( ! pHost ) return false;
