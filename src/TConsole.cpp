@@ -2406,6 +2406,7 @@ void TConsole::createQML( QString & name, QString & source, int x, int y, int wi
         //container->setAttribute( Qt::WA_DeleteOnClose );
         container->setGeometry(x, y, width, height);
         container->show();
+        mQMLWindowMap[name] = container;
     }
     qView->setBaseSize(QSize(width,height));
     mQMLMap[name] = qView;

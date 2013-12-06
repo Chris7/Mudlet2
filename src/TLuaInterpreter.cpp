@@ -2497,6 +2497,36 @@ int TLuaInterpreter::getQML( lua_State *L )
     return 1;
 }
 
+int TLuaInterpreter::dockQML( lua_State *L )
+{
+    QString name;
+    bool state;
+    if( ! lua_isstring( L, 1 ) )
+    {
+        lua_pushfstring( L, "dockQML: bad argument #1 (string expected, got %s)", luaL_typename( L, 1) );
+        lua_error( L );
+        return 1;
+    }
+    else
+    {
+        name = QString(lua_tostring( L, 1 ));
+    }
+    if( ! lua_isboolean( L, 2 ) )
+    {
+        lua_pushfstring( L, "dockQML: bad argument #2 (boolean expected, got %s)", luaL_typename( L, 2) );
+        lua_error( L );
+        return 1;
+    }
+    else
+    {
+        state = lua_toboolean( L, 2 );
+    }
+    name = QString(lua_tostring(L, 1));
+    Host * pHost = TLuaInterpreter::luaInterpreterMap[L];
+    mudlet::self()->dockQML( pHost, name, state );
+    return 1;
+}
+
 int TLuaInterpreter::createLabel( lua_State *L )
 {
     string luaSendText="";
@@ -10763,6 +10793,7 @@ void TLuaInterpreter::initLuaGlobals()
     lua_register( pGlobalLua, "removeQML", TLuaInterpreter::removeQML );
     lua_register( pGlobalLua, "updateQML", TLuaInterpreter::updateQML );
     lua_register( pGlobalLua, "getQML", TLuaInterpreter::getQML );
+    lua_register( pGlobalLua, "dockQML", TLuaInterpreter::dockQML );
     lua_register( pGlobalLua, "hideWindow", TLuaInterpreter::hideUserWindow );
     lua_register( pGlobalLua, "showWindow", TLuaInterpreter::showUserWindow );
     lua_register( pGlobalLua, "createBuffer", TLuaInterpreter::createBuffer );

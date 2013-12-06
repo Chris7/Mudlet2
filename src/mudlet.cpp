@@ -1058,6 +1058,37 @@ QString mudlet::getQML( Host * pHost, QString & name, QString & element, QString
     return pHost->mpConsole->getQML( name, element, property );
 }
 
+void mudlet::dockQML( Host * pHost, QString & name, bool state )
+{
+    if( ! pHost ) return;
+    if( ! pHost->mpConsole ) return;
+    QMap<QString, QQuickView *> &viewMap = mHostQMLMap[pHost];
+    QMap<QString, QWidget *> &windowMap = mHostQMLWindowMap[pHost];
+    QWidget * w = pHost->mpConsole->getQMLWindow( name );
+    QQuickView * view = pHost->mpConsole->getQMLView( name );
+    if ( state )
+    {
+        if ( w )
+            return;
+        QWidget *container = QWidget::createWindowContainer( view );
+        container->setParent( pHost->mpConsole->mpMainFrame );
+        container->setGeometry(view->x(), view->y(), view->width(), view->height());
+        container->show();
+        windowMap[name] = container;
+        pHost->mpConsole->mQMLWindowMap[name] = container;
+    }
+    else
+    {
+        //undock it
+        if ( ! w )
+            return;
+        windowMap.remove( name );
+        pHost->mpConsole->mQMLWindowMap.remove( name );
+        view->setParent( 0 );
+        //w->deleteLater();
+    }
+}
+
 bool mudlet::createLabel( Host * pHost, QString & name, int x, int y, int width, int height, bool fillBg )
 {
     if( ! pHost ) return false;
