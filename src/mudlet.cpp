@@ -1013,7 +1013,9 @@ bool mudlet::createQML( Host * pHost, QString & name, QString & source, int x, i
     QMap<QString, QWidget *> &windowMap = mHostQMLWindowMap[pHost];
     if ( ! viewMap.contains( name ) )
     {
-        pHost->mpConsole->createQML( name, source, x, y, width, height, floating );
+        bool created = pHost->mpConsole->createQML( name, source, x, y, width, height, floating );
+        if ( !created )
+            return false;
         QWidget * w = pHost->mpConsole->getQMLWindow( name );
         QQuickView * view = pHost->mpConsole->getQMLView( name );
         if ( view )
@@ -1053,8 +1055,8 @@ bool mudlet::updateQML( Host * pHost, QString & name, QString & element, QString
 
 QString mudlet::getQML( Host * pHost, QString & name, QString & element, QString & property )
 {
-    if( ! pHost ) return false;
-    if( ! pHost->mpConsole ) return false;
+    if( ! pHost ) return 0;
+    if( ! pHost->mpConsole ) return 0;
     return pHost->mpConsole->getQML( name, element, property );
 }
 

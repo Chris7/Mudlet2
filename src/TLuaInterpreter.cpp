@@ -2406,6 +2406,13 @@ int TLuaInterpreter::createQML( lua_State *L )
     }
     name = QString(lua_tostring(L, 1));
     source = QString(lua_tostring(L, 2));
+    QFileInfo sourcefileinfo(source);
+    if( !sourcefileinfo.exists() || !sourcefileinfo.isReadable() )
+    {
+        lua_pushfstring( L, "createQML: Source file does not exist or is unreadable.");
+        lua_error( L );
+        return 1;
+    }
     Host * pHost = TLuaInterpreter::luaInterpreterMap[L];
     lua_pushboolean( L, mudlet::self()->createQML( pHost, name, source, x, y, width, height, floating ) );
     return 1;

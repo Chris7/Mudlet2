@@ -2393,12 +2393,11 @@ void TConsole::callLua(QString code)
     mpHost->getLuaInterpreter()->compileAndExecuteScript( code );
 }
 
-void TConsole::createQML( QString & name, QString & source, int x, int y, int width, int height, bool floating )
+bool TConsole::createQML( QString & name, QString & source, int x, int y, int width, int height, bool floating )
 {
-    QQuickView *qView;
     if ( mQMLMap.contains( name ) )
-        return;
-    qView = new QQuickView();
+        return false;
+    QQuickView *qView = new QQuickView();
     if ( !floating )
     {
         QWidget *container = QWidget::createWindowContainer( qView );
@@ -2419,6 +2418,7 @@ void TConsole::createQML( QString & name, QString & source, int x, int y, int wi
         TDebug(QColor(Qt::white),QColor(Qt::red))<<"QML ERROR:"<<err.description();
     }
     qView->show();
+    return true;
 }
 
 bool TConsole::updateQML( QString & name, QString & element, QString & property, QVariant & value)
