@@ -2327,6 +2327,7 @@ int TLuaInterpreter::createMiniConsole( lua_State *L )
     return 1;
 }
 
+// createQML(name, source, x, y, width, height, floating(bool))
 int TLuaInterpreter::createQML( lua_State *L )
 {
     QString name, source;
@@ -2500,7 +2501,6 @@ int TLuaInterpreter::getQML( lua_State *L )
 int TLuaInterpreter::dockQML( lua_State *L )
 {
     QString name;
-    bool state;
     if( ! lua_isstring( L, 1 ) )
     {
         lua_pushfstring( L, "dockQML: bad argument #1 (string expected, got %s)", luaL_typename( L, 1) );
@@ -2511,20 +2511,31 @@ int TLuaInterpreter::dockQML( lua_State *L )
     {
         name = QString(lua_tostring( L, 1 ));
     }
-    if( ! lua_isboolean( L, 2 ) )
+
+    name = QString(lua_tostring(L, 1));
+    Host * pHost = TLuaInterpreter::luaInterpreterMap[L];
+    mudlet::self()->dockQML( pHost, name, true );
+    return 0;
+}
+
+int TLuaInterpreter::undockQML( lua_State *L )
+{
+    QString name;
+    if( ! lua_isstring( L, 1 ) )
     {
-        lua_pushfstring( L, "dockQML: bad argument #2 (boolean expected, got %s)", luaL_typename( L, 2) );
+        lua_pushfstring( L, "undockQML: bad argument #1 (string expected, got %s)", luaL_typename( L, 1) );
         lua_error( L );
         return 1;
     }
     else
     {
-        state = lua_toboolean( L, 2 );
+        name = QString(lua_tostring( L, 1 ));
     }
+
     name = QString(lua_tostring(L, 1));
     Host * pHost = TLuaInterpreter::luaInterpreterMap[L];
-    mudlet::self()->dockQML( pHost, name, state );
-    return 1;
+    mudlet::self()->dockQML( pHost, name, false );
+    return 0;
 }
 
 int TLuaInterpreter::createLabel( lua_State *L )
@@ -10794,6 +10805,7 @@ void TLuaInterpreter::initLuaGlobals()
     lua_register( pGlobalLua, "updateQML", TLuaInterpreter::updateQML );
     lua_register( pGlobalLua, "getQML", TLuaInterpreter::getQML );
     lua_register( pGlobalLua, "dockQML", TLuaInterpreter::dockQML );
+    lua_register( pGlobalLua, "undockQML", TLuaInterpreter::undockQML );
     lua_register( pGlobalLua, "hideWindow", TLuaInterpreter::hideUserWindow );
     lua_register( pGlobalLua, "showWindow", TLuaInterpreter::showUserWindow );
     lua_register( pGlobalLua, "createBuffer", TLuaInterpreter::createBuffer );
