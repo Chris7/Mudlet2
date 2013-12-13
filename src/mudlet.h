@@ -128,7 +128,6 @@ public:
    QMap<Host *, QMap<QString, TConsole * > > mHostConsoleMap;
    QMap<Host *, QMap<QString, TLabel * > > mHostLabelMap;
    QMap<Host *, QMap<QString, QQuickView * > > mHostQMLMap;
-   QMap<Host *, QMap<QString, QWidget * > > mHostQMLWindowMap;
    QIcon *                       testicon;
    bool                          mShowMenuBar;
    bool                          mShowToolbar;

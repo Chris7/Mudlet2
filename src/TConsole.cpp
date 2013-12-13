@@ -589,18 +589,6 @@ TConsole::TConsole( Host * pH, bool isDebugConsole, QWidget * parent )
 
 TConsole::~TConsole()
 {
-//    for( QMap<QString, QWidget *>::iterator it = mQMLWindowMap.begin(); it != mQMLWindowMap.end(); )
-//    {
-//        it.value()->close();
-//        it = mQMLWindowMap.erase(it);
-//    }
-//    for( QMap<QString, QQuickView *>::iterator it = mQMLMap.begin(); it != mQMLMap.end(); )
-//    {
-//        it.value()->close();
-//        it = mQMLMap.erase(it);
-//    }
-//    mQMLWindowMap.clear();
-//    mQMLMap.clear();
 }
 
 void TConsole::setLabelStyleSheet( std::string & buf, std::string & sh )
@@ -2397,15 +2385,12 @@ bool TConsole::createQML( QString & name, QString & source, int x, int y, int wi
 {
     if ( mQMLMap.contains( name ) )
         return false;
-    QQuickView *qView = new QQuickView();
+    QQuickView *qView = new QQuickView( );
     if ( !floating )
     {
-        QWidget *container = QWidget::createWindowContainer( qView );
-        container->setParent( mpMainFrame );
-        //container->setAttribute( Qt::WA_DeleteOnClose );
-        container->setGeometry(x, y, width, height);
-        container->show();
-        mQMLWindowMap[name] = container;
+        qView->setParent( parentWindow );
+        qView->setPosition( x, y );
+        qView->setFlags(qView->flags() | Qt::FramelessWindowHint);
     }
     qView->setBaseSize(QSize(width,height));
     mQMLMap[name] = qView;
@@ -2505,13 +2490,6 @@ QString TConsole::getQML( QString & name, QString & element, QString & property 
         return 0;
     }
     return value.toString();
-}
-
-QWidget * TConsole::getQMLWindow( QString name )
-{
-    if ( mQMLWindowMap.contains( name ) )
-        return mQMLWindowMap[name];
-    return 0;
 }
 
 QQuickView * TConsole::getQMLView( QString name )

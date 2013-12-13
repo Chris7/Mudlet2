@@ -829,6 +829,7 @@ void mudlet::addConsoleForNewHost( Host * pH )
     if( mConsoleMap.contains( pH ) ) return;
     pH->mLogStatus = mAutolog;
     TConsole * pConsole = new TConsole( pH, false );
+    pConsole->parentWindow = this->windowHandle();
     if( ! pConsole ) return;
     pH->mpConsole = pConsole;
     pConsole->setWindowTitle( pH->getName() );
@@ -864,8 +865,6 @@ void mudlet::addConsoleForNewHost( Host * pH )
     mHostLabelMap[mpCurrentActiveHost] = labelMap;
     QMap<QString, QQuickView * > viewMap;
     mHostQMLMap[mpCurrentActiveHost] = viewMap;
-    QMap<QString, QWidget * > windowMap;
-    mHostQMLWindowMap[mpCurrentActiveHost] = windowMap;
     mpCurrentActiveHost->mpConsole->show();
     mpCurrentActiveHost->mpConsole->repaint();
     mpCurrentActiveHost->mpConsole->refresh();
@@ -1010,18 +1009,22 @@ bool mudlet::createQML( Host * pHost, QString & name, QString & source, int x, i
     if( ! pHost ) return false;
     if( ! pHost->mpConsole ) return false;
     QMap<QString, QQuickView *> &viewMap = mHostQMLMap[pHost];
-    QMap<QString, QWidget *> &windowMap = mHostQMLWindowMap[pHost];
+    //if we're floating we need to offset the y to be where the console window is to not block our
+    //toolbars
+    if ( ! floating )
+    {
+        int minY = mpMainToolBar->height()+MenuBar->height();
+        if ( y < minY )
+            y = minY;
+    }
     if ( ! viewMap.contains( name ) )
     {
         bool created = pHost->mpConsole->createQML( name, source, x, y, width, height, floating );
         if ( !created )
             return false;
-        QWidget * w = pHost->mpConsole->getQMLWindow( name );
         QQuickView * view = pHost->mpConsole->getQMLView( name );
         if ( view )
             viewMap[name] = view;
-        if ( w )
-            windowMap[name] = w;
         return true;
 
     }
@@ -1033,17 +1036,11 @@ void mudlet::removeQML( Host * pHost, QString & name )
     if( ! pHost ) return;
     if( ! pHost->mpConsole ) return;
     QMap<QString, QQuickView *> &viewMap = mHostQMLMap[pHost];
-    QMap<QString, QWidget *> &windowMap = mHostQMLWindowMap[pHost];
-    QWidget * w = pHost->mpConsole->getQMLWindow( name );
     QQuickView * view = pHost->mpConsole->getQMLView( name );
     if ( view != 0 )
         view->deleteLater();
-    if ( w != 0 )
-        w->deleteLater();
     viewMap.remove( name );
-    windowMap.remove( name );
     pHost->mpConsole->mQMLMap.remove( name );
-    pHost->mpConsole->mQMLWindowMap.remove( name );
 }
 
 bool mudlet::updateQML( Host * pHost, QString & name, QString & element, QString & property, QVariant & value)
@@ -1064,31 +1061,25 @@ void mudlet::dockQML( Host * pHost, QString & name, bool state )
 {
     if( ! pHost ) return;
     if( ! pHost->mpConsole ) return;
-    QMap<QString, QQuickView *> &viewMap = mHostQMLMap[pHost];
-    QMap<QString, QWidget *> &windowMap = mHostQMLWindowMap[pHost];
-    QWidget * w = pHost->mpConsole->getQMLWindow( name );
     QQuickView * view = pHost->mpConsole->getQMLView( name );
+    if ( !view )
+        return;
+    qDebug()<<view->flags()<<Qt::FramelessWindowHint;
     if ( state )
     {
-        if ( w )
+        if ( view->parent() )
             return;
-        QWidget *container = QWidget::createWindowContainer( view );
-        container->setParent( pHost->mpConsole->mpMainFrame );
-        container->setGeometry(view->x(), view->y(), view->width(), view->height());
-        container->show();
-        windowMap[name] = container;
-        pHost->mpConsole->mQMLWindowMap[name] = container;
+        view->setParent( this->windowHandle() );
+        view->setFlags( view->flags() | Qt::FramelessWindowHint );
     }
     else
     {
-        //undock it
-        if ( ! w )
+        if ( !view->parent() )
             return;
-        windowMap.remove( name );
-        pHost->mpConsole->mQMLWindowMap.remove( name );
         view->setParent( 0 );
-        //w->deleteLater();
+        view->setFlags( view->flags() & ~Qt::FramelessWindowHint );
     }
+    qDebug()<<view->flags()<<Qt::FramelessWindowHint;
 }
 
 bool mudlet::createLabel( Host * pHost, QString & name, int x, int y, int width, int height, bool fillBg )

@@ -231,7 +231,6 @@ public:
       bool              mIsSubConsole;
       std::map<std::string, TLabel *> mLabelMap;
       QMap< QString, QQuickView * > mQMLMap;
-      QMap< QString, QWidget * > mQMLWindowMap;
       QFile             mLogFile;
       QString           mLogFileName;
       QTextStream       mLogStream;
@@ -298,6 +297,7 @@ public:
       int               mCurrentSearchResult;
       QList<int>        mSearchResults;
       QString           mSearchQuery;
+      QWindow *         parentWindow;
 
 signals:
 
