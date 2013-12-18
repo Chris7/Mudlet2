@@ -456,40 +456,41 @@ void TMap::initGraph()
     locations.clear();
     roomidToIndex.clear();
     g.clear();
-    g = mygraph_t();
-    weightmap = get(edge_weight, g);
+    const mpi_process_group& mpg = mpi_process_group();
+    g = mygraph_t;//(mpg);
+//    weightmap = get(edge_weight, g);
     QList<TRoom*> roomList = mpRoomDB->getRoomPtrList();
     int roomCount=0;
     int edgeCount=0;
-    for( int _k=0; _k<roomList.size(); _k++ )
-    {
-        TRoom * pR = roomList[_k];
-        int i = pR->getId();
-        if( pR->isLocked || i < 1 )
-        {
-            continue;
-        }
-        roomCount++;
-        int roomExits = edgeCount;
-        location l;
-        l.x = pR->x;
-        l.y = pR->y;
-        l.z = pR->z;
-        l.id = pR->getId();
-        l.area = pR->getArea();
-        locations.push_back( l );
-    }
-    for(int i=0;i<locations.size();i++){
-        roomidToIndex[locations[i].id] = i;
-        indexToRoomid[i] = locations[i].id;
-    }
+//    for( int _k=0; _k<roomList.size(); _k++ )
+//    {
+//        TRoom * pR = roomList[_k];
+//        int i = pR->getId();
+//        if( pR->isLocked || i < 1 )
+//        {
+//            continue;
+//        }
+//        roomCount++;
+//        int roomExits = edgeCount;
+//        location l;
+//        l.x = pR->x;
+//        l.y = pR->y;
+//        l.z = pR->z;
+//        l.id = pR->getId();
+//        l.area = pR->getArea();
+//        locations.push_back( l );
+//    }
+//    for(int i=0;i<locations.size();i++){
+//        roomidToIndex[locations[i].id] = i;
+//        indexToRoomid[i] = locations[i].id;
+//    }
     for( int _k=0; _k<roomList.size(); _k++ ){
         TRoom * pR = roomList[_k];
-        if( pR->isLocked || !roomidToIndex.contains(pR->getId()) )
+        if( pR->isLocked )// || !roomidToIndex.contains(pR->getId()) )
         {
             continue;
         }
-        int roomIndex = roomidToIndex[pR->getId()];
+        int roomIndex = pR->getId();//roomidToIndex[pR->getId()];
         TRoom * pN = mpRoomDB->getRoom( pR->getNorth() );
         TRoom * pNW = mpRoomDB->getRoom( pR->getNorthwest() );
         TRoom * pNE = mpRoomDB->getRoom( pR->getNortheast() );
@@ -513,13 +514,11 @@ void TMap::initGraph()
                 //edgeCount++;
                 edge_descriptor e;
                 bool inserted;
-                tie(e, inserted) = add_edge( roomIndex,
-                                             roomidToIndex[pR->getNorth()],
-                                            g );
-                if( exitWeights.contains("n"))
-                    weightmap[e] = pR->getExitWeight("n");
-                else
-                    weightmap[e] = pN->getWeight();
+                add_edge( roomIndex, pR->getNorth(), roomExit("North", 1));
+//                if( exitWeights.contains("n"))
+//                    weightmap[e] = pR->getExitWeight("n");
+//                else
+//                    weightmap[e] = pN->getWeight();
             }
         }
         if( pS && !pS->isLocked )
@@ -529,31 +528,27 @@ void TMap::initGraph()
                 //edgeCount++;
                 edge_descriptor e;
                 bool inserted;
-                tie(e, inserted) = add_edge( roomIndex,
-                                            roomidToIndex[pR->getSouth()],
-                                            g );
-                if( exitWeights.contains("s"))
-                    weightmap[e] = pR->getExitWeight("s");
-                else
-                    weightmap[e] = pS->getWeight();
+                add_edge( roomIndex, pR->getSouth(), roomExit("South", 1));
+//                if( exitWeights.contains("s"))
+//                    weightmap[e] = pR->getExitWeight("s");
+//                else
+//                    weightmap[e] = pS->getWeight();
             }
         }
-        if( pNE && !pNE->isLocked )
-        {
-            if( !pR->hasExitLock( DIR_NORTHEAST ) )
-            {
-//                edgeCount++;
-                edge_descriptor e;
-                bool inserted;
-                tie(e, inserted) = add_edge( roomIndex,
-                                            roomidToIndex[pR->getNortheast()],
-                                            g );
-                if( exitWeights.contains("ne"))
-                    weightmap[e] = pR->getExitWeight("ne");
-                else
-                    weightmap[e] = pNE->getWeight();
-            }
-        }
+//        if( pNE && !pNE->isLocked )
+//        {
+//            if( !pR->hasExitLock( DIR_NORTHEAST ) )
+//            {
+////                edgeCount++;
+//                edge_descriptor e;
+//                bool inserted;
+//                add_edge( roomIndex, pR->getNorth(), roomExit("North", 1));
+////                if( exitWeights.contains("ne"))
+////                    weightmap[e] = pR->getExitWeight("ne");
+////                else
+////                    weightmap[e] = pNE->getWeight();
+//            }
+//        }
         if( pE && !pE->isLocked )
         {
             if( !pR->hasExitLock( DIR_EAST ) )
@@ -561,13 +556,11 @@ void TMap::initGraph()
                //edgeCount++;
                edge_descriptor e;
                bool inserted;
-               tie(e, inserted) = add_edge( roomIndex,
-                                           roomidToIndex[pR->getEast()],
-                                           g );
-               if( exitWeights.contains("e"))
-                   weightmap[e] = pR->getExitWeight("e");
-               else
-                   weightmap[e] = pE->getWeight();
+               add_edge( roomIndex, pR->getEast(), roomExit("East", 1));
+//               if( exitWeights.contains("e"))
+//                   weightmap[e] = pR->getExitWeight("e");
+//               else
+//                   weightmap[e] = pE->getWeight();
             }
         }
         if( pW && !pW->isLocked )
@@ -578,163 +571,146 @@ void TMap::initGraph()
                 edge_descriptor e;
                 bool inserted;
                 bool exit = false;
-                tie(e, inserted) = add_edge( roomIndex,
-                                            roomidToIndex[pR->getWest()],
-                                            g );
-                if( exitWeights.contains("w"))
-                    weightmap[e] = pR->getExitWeight("w");
-                else
-                    weightmap[e] = pW->getWeight();
+                add_edge( roomIndex, pR->getWest(), roomExit("West", 1));
+//                if( exitWeights.contains("w"))
+//                    weightmap[e] = pR->getExitWeight("w");
+//                else
+//                    weightmap[e] = pW->getWeight();
             }
         }
-        if( pSW && !pSW->isLocked )
-        {
-            if( !pR->hasExitLock( DIR_SOUTHWEST ) )
-            {
-//                edgeCount++;
-                edge_descriptor e;
-                bool inserted;
-                tie(e, inserted) = add_edge( roomIndex,
-                                            roomidToIndex[pR->getSouthwest()],
-                                            g );
-                if( exitWeights.contains("sw"))
-                    weightmap[e] = pR->getExitWeight("sw");
-                else
-                    weightmap[e] = pSW->getWeight();
-            }
-        }
-        if( pSE && !pSE->isLocked )
-        {
-            if( !pR->hasExitLock( DIR_SOUTHEAST ) )
-            {
-//                edgeCount++;
-                edge_descriptor e;
-                bool inserted;
-                tie(e, inserted) = add_edge( roomIndex,
-                                            roomidToIndex[pR->getSoutheast()],
-                                            g );
-                if( exitWeights.contains("se"))
-                    weightmap[e] = pR->getExitWeight("se");
-                else
-                    weightmap[e] = pSE->getWeight();
-            }
-        }
-        if( pNW && !pNW->isLocked )
-        {
-            if( !pR->hasExitLock( DIR_NORTHWEST ) )
-            {
-//                edgeCount++;
-                edge_descriptor e;
-                bool inserted;
-                tie(e, inserted) = add_edge( roomIndex,
-                                            roomidToIndex[pR->getNorthwest()],
-                                            g );
-                if( exitWeights.contains("nw"))
-                    weightmap[e] = pR->getExitWeight("nw");
-                else
-                    weightmap[e] = pNW->getWeight();
-            }
-        }
-        if( pUP && !pUP->isLocked )
-        {
-            if( !pR->hasExitLock( DIR_UP ) )
-            {
-//                edgeCount++;
-                edge_descriptor e;
-                bool inserted;
-                tie(e, inserted) = add_edge( roomIndex,
-                                            roomidToIndex[pR->getUp()],
-                                            g );
-                if( exitWeights.contains("up"))
-                    weightmap[e] = pR->getExitWeight("up");
-                else
-                    weightmap[e] = pUP->getWeight();
-            }
-        }
-        if( pDOWN && !pDOWN->isLocked )
-        {
-            if( !pR->hasExitLock( DIR_DOWN ) )
-            {
-//                edgeCount++;
-                edge_descriptor e;
-                bool inserted;
-                tie(e, inserted) = add_edge( roomIndex,
-                                            roomidToIndex[pR->getDown()],
-                                            g );
-                if( exitWeights.contains("down"))
-                    weightmap[e] = pR->getExitWeight("down");
-                else
-                    weightmap[e] = pDOWN->getWeight();
-            }
-        }
-        if( pIN && !pIN->isLocked )
-        {
-            if( !pR->hasExitLock( DIR_IN ) )
-            {
-//                edgeCount++;
-                edge_descriptor e;
-                bool inserted;
-                tie(e, inserted) = add_edge( roomIndex,
-                                            roomidToIndex[pR->getIn()],
-                                            g );
-                if( exitWeights.contains("in"))
-                    weightmap[e] = pR->getExitWeight("in");
-                else
-                    weightmap[e] = pIN->getWeight();
-            }
-        }
-        if( pOUT && !pOUT->isLocked )
-        {
-            if( !pR->hasExitLock( DIR_OUT ) )
-            {
-//                 edgeCount++;
-                 edge_descriptor e;
-                 bool inserted;
-                 tie(e, inserted) = add_edge( roomIndex,
-                                              roomidToIndex[pR->getOut()],
-                                             g );
-                 if( exitWeights.contains("out"))
-                     weightmap[e] = pR->getExitWeight("out");
-                 else
-                     weightmap[e] = pOUT->getWeight();
-            }
-        }
-        if( pR->getOtherMap().size() > 0 )
-        {
-            QMapIterator<int, QString> it( pR->getOtherMap() );
-            while( it.hasNext() )
-            {
-                it.next();
-                int _id = it.key();
-                QString _cmd = it.value();
-                if( _cmd.size()>0 ) _cmd.remove(0,1);//strip special exit lock information
-                TRoom * pSpecial = mpRoomDB->getRoom( _id );
-                if( !pSpecial || pR->hasSpecialExitLock( _id, _cmd ) || pSpecial->isLocked)
-                    continue;
-                else
-                {
-//                    edgeCount++;
-                    edge_descriptor e;
-                    bool inserted;
-                    tie(e, inserted) = add_edge( roomIndex,
-                                                roomidToIndex[pSpecial->getId()],
-                                                g );
-                    if( exitWeights.contains(_cmd))
-                    {
-                        weightmap[e] = pR->getExitWeight(_cmd);
-                    }
-                    else
-                    {
-                        weightmap[e] = pSpecial->getWeight();
-                    }
+//        if( pSW && !pSW->isLocked )
+//        {
+//            if( !pR->hasExitLock( DIR_SOUTHWEST ) )
+//            {
+////                edgeCount++;
+//                edge_descriptor e;
+//                bool inserted;
+//                add_edge( roomIndex, pR->getNorth(), roomExit("North", 1));
+////                if( exitWeights.contains("sw"))
+////                    weightmap[e] = pR->getExitWeight("sw");
+////                else
+////                    weightmap[e] = pSW->getWeight();
+//            }
+//        }
+//        if( pSE && !pSE->isLocked )
+//        {
+//            if( !pR->hasExitLock( DIR_SOUTHEAST ) )
+//            {
+////                edgeCount++;
+//                edge_descriptor e;
+//                bool inserted;
+//                add_edge( roomIndex, pR->getNorth(), roomExit("North", 1));
+////                if( exitWeights.contains("se"))
+////                    weightmap[e] = pR->getExitWeight("se");
+////                else
+////                    weightmap[e] = pSE->getWeight();
+//            }
+//        }
+//        if( pNW && !pNW->isLocked )
+//        {
+//            if( !pR->hasExitLock( DIR_NORTHWEST ) )
+//            {
+////                edgeCount++;
+//                edge_descriptor e;
+//                bool inserted;
+//                add_edge( roomIndex, pR->getNorth(), roomExit("North", 1));
+////                if( exitWeights.contains("nw"))
+////                    weightmap[e] = pR->getExitWeight("nw");
+////                else
+////                    weightmap[e] = pNW->getWeight();
+//            }
+//        }
+//        if( pUP && !pUP->isLocked )
+//        {
+//            if( !pR->hasExitLock( DIR_UP ) )
+//            {
+////                edgeCount++;
+//                edge_descriptor e;
+//                bool inserted;
+//                add_edge( roomIndex, pR->getNorth(), roomExit("North", 1));
+////                if( exitWeights.contains("up"))
+////                    weightmap[e] = pR->getExitWeight("up");
+////                else
+////                    weightmap[e] = pUP->getWeight();
+//            }
+//        }
+//        if( pDOWN && !pDOWN->isLocked )
+//        {
+//            if( !pR->hasExitLock( DIR_DOWN ) )
+//            {
+////                edgeCount++;
+//                edge_descriptor e;
+//                bool inserted;
+//                add_edge( roomIndex, pR->getNorth(), roomExit("North", 1));
+////                if( exitWeights.contains("down"))
+////                    weightmap[e] = pR->getExitWeight("down");
+////                else
+////                    weightmap[e] = pDOWN->getWeight();
+//            }
+//        }
+//        if( pIN && !pIN->isLocked )
+//        {
+//            if( !pR->hasExitLock( DIR_IN ) )
+//            {
+////                edgeCount++;
+//                edge_descriptor e;
+//                bool inserted;
+//                add_edge( roomIndex, pR->getNorth(), roomExit("North", 1));
+////                if( exitWeights.contains("in"))
+////                    weightmap[e] = pR->getExitWeight("in");
+////                else
+////                    weightmap[e] = pIN->getWeight();
+//            }
+//        }
+//        if( pOUT && !pOUT->isLocked )
+//        {
+//            if( !pR->hasExitLock( DIR_OUT ) )
+//            {
+////                 edgeCount++;
+//                 edge_descriptor e;
+//                 bool inserted;
+//                 add_edge( roomIndex, pR->getNorth(), roomExit("North", 1));
+////                 if( exitWeights.contains("out"))
+////                     weightmap[e] = pR->getExitWeight("out");
+////                 else
+////                     weightmap[e] = pOUT->getWeight();
+//            }
+//        }
+//        if( pR->getOtherMap().size() > 0 )
+//        {
+//            QMapIterator<int, QString> it( pR->getOtherMap() );
+//            while( it.hasNext() )
+//            {
+//                it.next();
+//                int _id = it.key();
+//                QString _cmd = it.value();
+//                if( _cmd.size()>0 ) _cmd.remove(0,1);//strip special exit lock information
+//                TRoom * pSpecial = mpRoomDB->getRoom( _id );
+//                if( !pSpecial || pR->hasSpecialExitLock( _id, _cmd ) || pSpecial->isLocked)
+//                    continue;
+//                else
+//                {
+////                    edgeCount++;
+//                    edge_descriptor e;
+//                    bool inserted;
+//                    add_edge( roomIndex, pR->getNorth(), roomExit("North", 1));
+////                    if( exitWeights.contains(_cmd))
+////                    {
+////                        weightmap[e] = pR->getExitWeight(_cmd);
+////                    }
+////                    else
+////                    {
+////                        weightmap[e] = pSpecial->getWeight();
+////                    }
 
-                }
-            }
-        }
+//                }
+//            }
+//        }
 //        if( roomExits == edgeCount ) locations.pop_back();
     }
 
     mMapGraphNeedsUpdate = false;
+    synchronize(g.process_group());
     qDebug()<<"initGraph: nodes: "<<locations.size()<<"/"<<roomCount<<" edges:"<<edgeCount<<" run time:"<<_time.elapsed();
 }
 

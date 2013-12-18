@@ -1,9 +1,10 @@
 #ifndef TASTAR_H
 #define TASTAR_H
 
-
 #include <boost/graph/astar_search.hpp>
-#include <boost/graph/adjacency_list.hpp>
+#include <boost/graph/use_mpi.hpp>
+#include <boost/graph/distributed/adjacency_list.hpp>
+#include <boost/graph/distributed/mpi_process_group.hpp>
 #include <boost/graph/random.hpp>
 #include <boost/random.hpp>
 #include <boost/graph/graphviz.hpp>
@@ -27,45 +28,6 @@ struct location
 };
 typedef float cost;
 
-template <class Name, class LocMap>
-class city_writer {
-public:
-  city_writer(Name n, LocMap l, float _minx, float _maxx, float _minz,
-              float _miny, float _maxy, float _maxz,
-              unsigned int _ptx, unsigned int _pty, unsigned int _ptz )
-    : name(n), loc(l), minx(_minx), maxx(_maxx), miny(_miny),
-      maxy(_maxy), minz(_minz), maxz(_maxz), ptx(_ptx), pty(_pty), ptz(_ptz) {}
-  template <class Vertex>
-  void operator()(ostream& out, const Vertex& v) const {
-    float px = 1 - (loc[v].x - minx) / (maxx - minx);
-    float py = (loc[v].y - miny) / (maxy - miny);
-    float pz = (loc[v].z - minz) / (maxz - minz);
-    out << "[label=\"" << name[v] << "\", pos=\""
-        << static_cast<unsigned int>(ptx * px) << ","
-        << static_cast<unsigned int>(pty * py) << ","
-        << static_cast<unsigned int>(ptz * pz)
-        << "\", fontsize=\"11\"]";
-  }
-private:
-  Name name;
-  LocMap loc;
-  float minx, maxx, miny, maxy, minz, maxz;
-  unsigned int ptx, pty, ptz;
-};
-
-template <class WeightMap>
-class time_writer {
-public:
-  time_writer(WeightMap w) : wm(w) {}
-  template <class Edge>
-  void operator()(ostream &out, const Edge& e) const {
-    out << "[label=\"" << wm[e] << "\", fontsize=\"11\"]";
-  }
-private:
-  WeightMap wm;
-};
-
-
 // euclidean distance heuristic
 template <class Graph, class CostType, class LocMap>
 class distance_heuristic : public astar_heuristic<Graph, CostType>
@@ -76,6 +38,7 @@ public:
     : m_location(l), m_goal(goal) {}
   CostType operator()(Vertex u)
   {
+      return 1;
       if (m_location[m_goal].area != m_location[u].area)
           return 1;
       CostType dx = m_location[m_goal].x - m_location[u].x;
