@@ -1,11 +1,13 @@
 
 QMAKE_CXXFLAGS_RELEASE += -O3 -Wno-deprecated-declarations -Wno-unused-local-typedefs -Wno-unused-parameter
 QMAKE_CXXFLAGS_DEBUG += -O3 -Wno-deprecated-declarations -Wno-unused-local-typedefs -Wno-unused-parameter
+QMAKE_CXX = mpic++
+QMAKE_CC = mpicc
 #MOC_DIR = ./tmp
 #OBJECTS_DIR = ./tmp
 QT += network opengl uitools multimedia
-DEPENDPATH += .
-INCLUDEPATH += .
+DEPENDPATH += /home/chris/src/boost_1_55_0
+INCLUDEPATH += /home/chris/src/boost_1_55_0/stage/lib
 LIBLUA = -llua5.1
 #!exists(/usr/lib/x86_64-linux-gnu/liblua5.1.a):LIBLUA = -llua
 
@@ -19,7 +21,15 @@ unix:LIBS += -lpcre \
     -lyajl \
     -lGLU \
     -lzip \
-    -lz
+    -lz \
+    -lmpich \
+    -lboost_system \
+    -lboost_serialization \
+    -lboost_graph_parallel \
+    -lboost_mpi \
+    -lboost_exception \
+    -lmpichcxx
+
 
 win32:LIBS += -L"C:\\mudlet5_package" \
     -llua51 \

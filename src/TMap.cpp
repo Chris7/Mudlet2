@@ -455,11 +455,13 @@ void TMap::initGraph()
     QTime _time; _time.start();
     locations.clear();
     roomidToIndex.clear();
-    g.clear();
-    const mpi_process_group& mpg = mpi_process_group();
-    g = mygraph_t;//(mpg);
+//    g.clear();
+    //const mpi_process_group mpg = mpi_process_group();
+    //mpg = mpi_process_group();
+//    g = mygraph_t();//(mpg);
 //    weightmap = get(edge_weight, g);
     QList<TRoom*> roomList = mpRoomDB->getRoomPtrList();
+    mygraph_t g;
     int roomCount=0;
     int edgeCount=0;
 //    for( int _k=0; _k<roomList.size(); _k++ )
@@ -484,6 +486,7 @@ void TMap::initGraph()
 //        roomidToIndex[locations[i].id] = i;
 //        indexToRoomid[i] = locations[i].id;
 //    }
+    if (process_id(process_group(g)) == 0){
     for( int _k=0; _k<roomList.size(); _k++ ){
         TRoom * pR = roomList[_k];
         if( pR->isLocked )// || !roomidToIndex.contains(pR->getId()) )
@@ -514,70 +517,71 @@ void TMap::initGraph()
                 //edgeCount++;
                 edge_descriptor e;
                 bool inserted;
-                add_edge( roomIndex, pR->getNorth(), roomExit("North", 1));
+                int n = pR->getNorth();
+                add_edge( roomIndex, n, roomExit("North", 1), g);
 //                if( exitWeights.contains("n"))
 //                    weightmap[e] = pR->getExitWeight("n");
 //                else
 //                    weightmap[e] = pN->getWeight();
             }
         }
-        if( pS && !pS->isLocked )
-        {
-            if( !pR->hasExitLock( DIR_SOUTH ) )
-            {
-                //edgeCount++;
-                edge_descriptor e;
-                bool inserted;
-                add_edge( roomIndex, pR->getSouth(), roomExit("South", 1));
-//                if( exitWeights.contains("s"))
-//                    weightmap[e] = pR->getExitWeight("s");
-//                else
-//                    weightmap[e] = pS->getWeight();
-            }
-        }
-//        if( pNE && !pNE->isLocked )
+//        if( pS && !pS->isLocked )
 //        {
-//            if( !pR->hasExitLock( DIR_NORTHEAST ) )
+//            if( !pR->hasExitLock( DIR_SOUTH ) )
+//            {
+//                //edgeCount++;
+//                edge_descriptor e;
+//                bool inserted;
+//                add_edge( roomIndex, pR->getSouth(), roomExit("South", 1));
+////                if( exitWeights.contains("s"))
+////                    weightmap[e] = pR->getExitWeight("s");
+////                else
+////                    weightmap[e] = pS->getWeight();
+//            }
+//        }
+////        if( pNE && !pNE->isLocked )
+////        {
+////            if( !pR->hasExitLock( DIR_NORTHEAST ) )
+////            {
+//////                edgeCount++;
+////                edge_descriptor e;
+////                bool inserted;
+////                add_edge( roomIndex, pR->getNorth(), roomExit("North", 1));
+//////                if( exitWeights.contains("ne"))
+//////                    weightmap[e] = pR->getExitWeight("ne");
+//////                else
+//////                    weightmap[e] = pNE->getWeight();
+////            }
+////        }
+//        if( pE && !pE->isLocked )
+//        {
+//            if( !pR->hasExitLock( DIR_EAST ) )
+//            {
+//               //edgeCount++;
+//               edge_descriptor e;
+//               bool inserted;
+//               add_edge( roomIndex, pR->getEast(), roomExit("East", 1));
+////               if( exitWeights.contains("e"))
+////                   weightmap[e] = pR->getExitWeight("e");
+////               else
+////                   weightmap[e] = pE->getWeight();
+//            }
+//        }
+//        if( pW && !pW->isLocked )
+//        {
+//            if( !pR->hasExitLock( DIR_WEST ) )
 //            {
 ////                edgeCount++;
 //                edge_descriptor e;
 //                bool inserted;
-//                add_edge( roomIndex, pR->getNorth(), roomExit("North", 1));
-////                if( exitWeights.contains("ne"))
-////                    weightmap[e] = pR->getExitWeight("ne");
+//                bool exit = false;
+//                add_edge( roomIndex, pR->getWest(), roomExit("West", 1));
+////                if( exitWeights.contains("w"))
+////                    weightmap[e] = pR->getExitWeight("w");
 ////                else
-////                    weightmap[e] = pNE->getWeight();
+////                    weightmap[e] = pW->getWeight();
 //            }
 //        }
-        if( pE && !pE->isLocked )
-        {
-            if( !pR->hasExitLock( DIR_EAST ) )
-            {
-               //edgeCount++;
-               edge_descriptor e;
-               bool inserted;
-               add_edge( roomIndex, pR->getEast(), roomExit("East", 1));
-//               if( exitWeights.contains("e"))
-//                   weightmap[e] = pR->getExitWeight("e");
-//               else
-//                   weightmap[e] = pE->getWeight();
-            }
-        }
-        if( pW && !pW->isLocked )
-        {
-            if( !pR->hasExitLock( DIR_WEST ) )
-            {
-//                edgeCount++;
-                edge_descriptor e;
-                bool inserted;
-                bool exit = false;
-                add_edge( roomIndex, pR->getWest(), roomExit("West", 1));
-//                if( exitWeights.contains("w"))
-//                    weightmap[e] = pR->getExitWeight("w");
-//                else
-//                    weightmap[e] = pW->getWeight();
-            }
-        }
 //        if( pSW && !pSW->isLocked )
 //        {
 //            if( !pR->hasExitLock( DIR_SOUTHWEST ) )
@@ -708,6 +712,7 @@ void TMap::initGraph()
 //        }
 //        if( roomExits == edgeCount ) locations.pop_back();
     }
+    }
 
     mMapGraphNeedsUpdate = false;
     synchronize(g.process_group());
@@ -721,151 +726,151 @@ bool TMap::findPath( int from, int to )
         initGraph();
      }
 
-     //vertex start = from;//mRoomId;
-     //vertex goal = to;//mTargetID;
-     TRoom * pFrom = mpRoomDB->getRoom( from );
-     TRoom * pTo = mpRoomDB->getRoom( to );
+//     //vertex start = from;//mRoomId;
+//     //vertex goal = to;//mTargetID;
+//     TRoom * pFrom = mpRoomDB->getRoom( from );
+//     TRoom * pTo = mpRoomDB->getRoom( to );
 
-     if( !pFrom || !pTo )
-     {
-         return false;
-     }
+//     if( !pFrom || !pTo )
+//     {
+//         return false;
+//     }
 
-     vertex start = roomidToIndex[from];
-     vertex goal = roomidToIndex[to];
+//     vertex start = roomidToIndex[from];
+//     vertex goal = roomidToIndex[to];
 
-     vector<mygraph_t::vertex_descriptor> p(num_vertices(g));
-     vector<cost> d(num_vertices(g));
-     QTime t;
-     t.start();
-     try
-     {
-         astar_search( g,
-                       start,
-                       distance_heuristic<mygraph_t, cost, std::vector<location> >(locations, goal),
-                       predecessor_map(&p[0]).distance_map(&d[0]).
-                       visitor(astar_goal_visitor<vertex>(goal)) );
-     }
-     catch( found_goal fg )
-     {
-         qDebug()<<"time elapsed in astar:"<<t.elapsed();
-         t.restart();
-         list<vertex> shortest_path;
-         for(vertex v = goal; ; v = p[v])
-         {
-             //cout << "assembling path: v="<<v<<endl;
-             int nextRoom = indexToRoomid[v];
-             if( ! mpRoomDB->getRoom( nextRoom ) )
-             {
-                 cout<<"ERROR path assembly: path room not in map!"<<endl;
-                 return false;
-             }
-             shortest_path.push_front(nextRoom);
-             if(p[v] == v) break;
-         }
-         TRoom * pRD1 = mpRoomDB->getRoom(from);
-         TRoom * pRD2 = mpRoomDB->getRoom(to);
-         if( !pRD1 || !pRD2 ) return false;
-         cout << "Shortest path from " << pRD1->getId() << " to "
-              << pRD2->getId() << ": ";
-         list<vertex>::iterator spi = shortest_path.begin();
-         cout << pRD1->getId();
-         mPathList.clear();
-         mDirList.clear();
-         int curRoom = from;
+//     vector<mygraph_t::vertex_descriptor> p(num_vertices(g));
+//     vector<cost> d(num_vertices(g));
+//     QTime t;
+//     t.start();
+//     try
+//     {
+//         astar_search( g,
+//                       start,
+//                       distance_heuristic<mygraph_t, cost, std::vector<location> >(locations, goal),
+//                       predecessor_map(&p[0]).distance_map(&d[0]).
+//                       visitor(astar_goal_visitor<vertex>(goal)) );
+//     }
+//     catch( found_goal fg )
+//     {
+//         qDebug()<<"time elapsed in astar:"<<t.elapsed();
+//         t.restart();
+//         list<vertex> shortest_path;
+//         for(vertex v = goal; ; v = p[v])
+//         {
+//             //cout << "assembling path: v="<<v<<endl;
+//             int nextRoom = indexToRoomid[v];
+//             if( ! mpRoomDB->getRoom( nextRoom ) )
+//             {
+//                 cout<<"ERROR path assembly: path room not in map!"<<endl;
+//                 return false;
+//             }
+//             shortest_path.push_front(nextRoom);
+//             if(p[v] == v) break;
+//         }
+//         TRoom * pRD1 = mpRoomDB->getRoom(from);
+//         TRoom * pRD2 = mpRoomDB->getRoom(to);
+//         if( !pRD1 || !pRD2 ) return false;
+//         cout << "Shortest path from " << pRD1->getId() << " to "
+//              << pRD2->getId() << ": ";
+//         list<vertex>::iterator spi = shortest_path.begin();
+//         cout << pRD1->getId();
+//         mPathList.clear();
+//         mDirList.clear();
+//         int curRoom = from;
 
-         for( ++spi; spi != shortest_path.end(); ++spi )
-         {
-             TRoom * pRcurRoom = mpRoomDB->getRoom( curRoom );
-             TRoom * pRPath = mpRoomDB->getRoom( *spi );
-             if( !pRcurRoom || !pRPath )
-             {
-                 cout << "ERROR: path not possible. curRoom not in map!" << endl;
-                 mPathList.clear();
-                 mDirList.clear();
-                 return false;
-             }
-             cout <<" spi:"<<*spi<<" curRoom:"<< curRoom << endl;//" -> ";
-             mPathList.push_back( *spi );
-             if( pRcurRoom->getNorth() == pRPath->getId() )
-             {
-                 mDirList.push_back("n");
-             }
-             else if( pRcurRoom->getNortheast() == pRPath->getId() )
-             {
-                 mDirList.push_back("ne");
-             }
-             else if( pRcurRoom->getNorthwest() == pRPath->getId() )
-             {
-                 mDirList.push_back("nw");
-             }
-             else if( pRcurRoom->getSoutheast() == pRPath->getId() )
-             {
-                 mDirList.push_back("se");
-             }
-             else if( pRcurRoom->getSouthwest() == pRPath->getId() )
-             {
-                 mDirList.push_back("sw");
-             }
-             else if( pRcurRoom->getSouth() == pRPath->getId() )
-             {
-                 mDirList.push_back("s");
-             }
-             else if( pRcurRoom->getEast() == pRPath->getId() )
-             {
-                 mDirList.push_back("e");
-             }
-             else if( pRcurRoom->getWest() == pRPath->getId() )
-             {
-                 mDirList.push_back("w");
-             }
-             else if( pRcurRoom->getUp() == pRPath->getId() )
-             {
-                 mDirList.push_back("up");
-             }
-             else if( pRcurRoom->getDown() == pRPath->getId() )
-             {
-                 mDirList.push_back("down");
-             }
-             else if( pRcurRoom->getIn() == pRPath->getId() )
-             {
-                 mDirList.push_back("in");
-             }
-             else if( pRcurRoom->getOut() == pRPath->getId() )
-             {
-                 mDirList.push_back("out");
-             }
-             else if( pRcurRoom->getOtherMap().size() > 0 )
-             {
-                 QMapIterator<int, QString> it( pRcurRoom->getOtherMap() );
-                 while( it.hasNext() )
-                 {
-                     it.next();
-                     if( it.key() == pRPath->getId() )
-                     {
-                         QString _cmd = it.value();
-                         if( _cmd.size() > 0 && (_cmd.startsWith('0')))
-                         {
-                             _cmd = _cmd.mid(1);
-                             mDirList.push_back( _cmd );
-                             qDebug()<<" adding special exit: roomID:"<<pRcurRoom->getId()<<" OPEN special exit:"<<_cmd;
-                         }
-                         else if( _cmd.startsWith('1'))
-                         {
-                             qDebug()<<"NOT adding roomID:"<<pRcurRoom->getId()<<" LOCKED special exit:"<<_cmd;
-                         }
-                         else
-                             qDebug()<<"ERROR adding roomID:"<<pRcurRoom->getId()<<" special exit:"<<_cmd;
-                     }
-                 }
-             }
+//         for( ++spi; spi != shortest_path.end(); ++spi )
+//         {
+//             TRoom * pRcurRoom = mpRoomDB->getRoom( curRoom );
+//             TRoom * pRPath = mpRoomDB->getRoom( *spi );
+//             if( !pRcurRoom || !pRPath )
+//             {
+//                 cout << "ERROR: path not possible. curRoom not in map!" << endl;
+//                 mPathList.clear();
+//                 mDirList.clear();
+//                 return false;
+//             }
+//             cout <<" spi:"<<*spi<<" curRoom:"<< curRoom << endl;//" -> ";
+//             mPathList.push_back( *spi );
+//             if( pRcurRoom->getNorth() == pRPath->getId() )
+//             {
+//                 mDirList.push_back("n");
+//             }
+//             else if( pRcurRoom->getNortheast() == pRPath->getId() )
+//             {
+//                 mDirList.push_back("ne");
+//             }
+//             else if( pRcurRoom->getNorthwest() == pRPath->getId() )
+//             {
+//                 mDirList.push_back("nw");
+//             }
+//             else if( pRcurRoom->getSoutheast() == pRPath->getId() )
+//             {
+//                 mDirList.push_back("se");
+//             }
+//             else if( pRcurRoom->getSouthwest() == pRPath->getId() )
+//             {
+//                 mDirList.push_back("sw");
+//             }
+//             else if( pRcurRoom->getSouth() == pRPath->getId() )
+//             {
+//                 mDirList.push_back("s");
+//             }
+//             else if( pRcurRoom->getEast() == pRPath->getId() )
+//             {
+//                 mDirList.push_back("e");
+//             }
+//             else if( pRcurRoom->getWest() == pRPath->getId() )
+//             {
+//                 mDirList.push_back("w");
+//             }
+//             else if( pRcurRoom->getUp() == pRPath->getId() )
+//             {
+//                 mDirList.push_back("up");
+//             }
+//             else if( pRcurRoom->getDown() == pRPath->getId() )
+//             {
+//                 mDirList.push_back("down");
+//             }
+//             else if( pRcurRoom->getIn() == pRPath->getId() )
+//             {
+//                 mDirList.push_back("in");
+//             }
+//             else if( pRcurRoom->getOut() == pRPath->getId() )
+//             {
+//                 mDirList.push_back("out");
+//             }
+//             else if( pRcurRoom->getOtherMap().size() > 0 )
+//             {
+//                 QMapIterator<int, QString> it( pRcurRoom->getOtherMap() );
+//                 while( it.hasNext() )
+//                 {
+//                     it.next();
+//                     if( it.key() == pRPath->getId() )
+//                     {
+//                         QString _cmd = it.value();
+//                         if( _cmd.size() > 0 && (_cmd.startsWith('0')))
+//                         {
+//                             _cmd = _cmd.mid(1);
+//                             mDirList.push_back( _cmd );
+//                             qDebug()<<" adding special exit: roomID:"<<pRcurRoom->getId()<<" OPEN special exit:"<<_cmd;
+//                         }
+//                         else if( _cmd.startsWith('1'))
+//                         {
+//                             qDebug()<<"NOT adding roomID:"<<pRcurRoom->getId()<<" LOCKED special exit:"<<_cmd;
+//                         }
+//                         else
+//                             qDebug()<<"ERROR adding roomID:"<<pRcurRoom->getId()<<" special exit:"<<_cmd;
+//                     }
+//                 }
+//             }
 
-             //qDebug()<<"added to DirList:"<<mDirList.back();
-             curRoom = *spi;
-         }
-        qDebug()<<"time elapsed building path"<<t.elapsed();
-         return true;
-     }
+//             //qDebug()<<"added to DirList:"<<mDirList.back();
+//             curRoom = *spi;
+//         }
+//        qDebug()<<"time elapsed building path"<<t.elapsed();
+//         return true;
+//     }
 
      return false;
 }

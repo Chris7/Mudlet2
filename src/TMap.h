@@ -63,8 +63,8 @@ public:
 
 struct mapRoom {
   mapRoom() { }
-  mapRoom(const std::string& name, int id = -1, int area = -1)
-      : name(name), id(id), area(area) { }
+  mapRoom(int id, const std::string& name = "", int area = -1)
+      : id(id), name(name), area(area) { }
 
   std::string name;
   int area, id;
@@ -72,15 +72,23 @@ struct mapRoom {
   // Serialization support is required!
   template<typename Archiver>
   void serialize(Archiver& ar, const unsigned int /*version*/) {
-    ar & name &id & area;
+    ar & id & name & area;
   }
-
-  template<>
-  struct internal_vertex_name<mapRoom>
-  {
-    typedef multi_index::member<mapRoom, int, &mapRoom::id> type;
-  };
 };
+
+namespace boost { namespace graph {
+    template<>
+    struct internal_vertex_name<mapRoom>
+    {
+      typedef multi_index::member<mapRoom, int, &mapRoom::id> type;
+    };
+
+    template<>
+    struct internal_vertex_constructor<mapRoom>
+    {
+      typedef vertex_from_name<mapRoom> type;
+    };
+}}
 
 struct roomExit {
   roomExit() { }
