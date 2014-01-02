@@ -83,6 +83,7 @@ int main(int argc, char *argv[])
 //    #endif
 
     //FIXME qInstallMsgHandler( debugOutput );
+    MPI_Init(&argc, &argv);//for parallel boost graph library
     spDebugConsole = 0;
 
     Q_INIT_RESOURCE(mudlet_alpha);

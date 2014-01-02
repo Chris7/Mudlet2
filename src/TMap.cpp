@@ -24,6 +24,12 @@
 #include <QMainWindow>
 #include <QMessageBox>
 #include "dlgMapper.h"
+#include <boost/graph/use_mpi.hpp>
+#include <boost/config.hpp>
+#include <boost/throw_exception.hpp>
+#include <boost/graph/distributed/dijkstra_shortest_paths.hpp>
+#include <boost/graph/distributed/mpi_process_group.hpp>
+#include <boost/graph/distributed/adjacency_list.hpp>
 
 
 TMap::TMap( Host * pH )
@@ -455,38 +461,35 @@ void TMap::initGraph()
     QTime _time; _time.start();
     locations.clear();
     roomidToIndex.clear();
-//    g.clear();
-    //const mpi_process_group mpg = mpi_process_group();
-    //mpg = mpi_process_group();
-//    g = mygraph_t();//(mpg);
+    g.clear();
 //    weightmap = get(edge_weight, g);
     QList<TRoom*> roomList = mpRoomDB->getRoomPtrList();
     mygraph_t g;
     int roomCount=0;
     int edgeCount=0;
-//    for( int _k=0; _k<roomList.size(); _k++ )
-//    {
-//        TRoom * pR = roomList[_k];
-//        int i = pR->getId();
-//        if( pR->isLocked || i < 1 )
-//        {
-//            continue;
-//        }
-//        roomCount++;
-//        int roomExits = edgeCount;
-//        location l;
-//        l.x = pR->x;
-//        l.y = pR->y;
-//        l.z = pR->z;
-//        l.id = pR->getId();
-//        l.area = pR->getArea();
-//        locations.push_back( l );
-//    }
-//    for(int i=0;i<locations.size();i++){
-//        roomidToIndex[locations[i].id] = i;
-//        indexToRoomid[i] = locations[i].id;
-//    }
-    if (process_id(process_group(g)) == 0){
+    for( int _k=0; _k<roomList.size(); _k++ )
+    {
+        TRoom * pR = roomList[_k];
+        int i = pR->getId();
+        if( pR->isLocked || i < 1 )
+        {
+            continue;
+        }
+        roomCount++;
+        int roomExits = edgeCount;
+        location l;
+        l.x = pR->x;
+        l.y = pR->y;
+        l.z = pR->z;
+        l.id = pR->getId();
+        l.area = pR->getArea();
+        locations.push_back( l );
+    }
+    for(int i=0;i<locations.size();i++){
+        roomidToIndex[locations[i].id] = i;
+        indexToRoomid[i] = locations[i].id;
+    }
+//    if (process_id(process_group(g)) == 0){
     for( int _k=0; _k<roomList.size(); _k++ ){
         TRoom * pR = roomList[_k];
         if( pR->isLocked )// || !roomidToIndex.contains(pR->getId()) )
@@ -711,12 +714,12 @@ void TMap::initGraph()
 //            }
 //        }
 //        if( roomExits == edgeCount ) locations.pop_back();
-    }
+//    }
     }
 
     mMapGraphNeedsUpdate = false;
-    synchronize(g.process_group());
-    qDebug()<<"initGraph: nodes: "<<locations.size()<<"/"<<roomCount<<" edges:"<<edgeCount<<" run time:"<<_time.elapsed();
+//    synchronize(g.process_group());
+//    qDebug()<<"initGraph: nodes: "<<locations.size()<<"/"<<roomCount<<" edges:"<<edgeCount<<" run time:"<<_time.elapsed();
 }
 
 bool TMap::findPath( int from, int to )
@@ -728,32 +731,28 @@ bool TMap::findPath( int from, int to )
 
 //     //vertex start = from;//mRoomId;
 //     //vertex goal = to;//mTargetID;
-//     TRoom * pFrom = mpRoomDB->getRoom( from );
-//     TRoom * pTo = mpRoomDB->getRoom( to );
+     TRoom * pFrom = mpRoomDB->getRoom( from );
+     TRoom * pTo = mpRoomDB->getRoom( to );
 
-//     if( !pFrom || !pTo )
-//     {
-//         return false;
-//     }
+     if( !pFrom || !pTo )
+     {
+         return false;
+     }
 
-//     vertex start = roomidToIndex[from];
-//     vertex goal = roomidToIndex[to];
+//     vertex start = from;//roomidToIndex[from];
+//     vertex goal = to;//roomidToIndex[to];
 
-//     vector<mygraph_t::vertex_descriptor> p(num_vertices(g));
-//     vector<cost> d(num_vertices(g));
-//     QTime t;
-//     t.start();
-//     try
-//     {
-//         astar_search( g,
-//                       start,
-//                       distance_heuristic<mygraph_t, cost, std::vector<location> >(locations, goal),
-//                       predecessor_map(&p[0]).distance_map(&d[0]).
-//                       visitor(astar_goal_visitor<vertex>(goal)) );
-//     }
-//     catch( found_goal fg )
-//     {
-//         qDebug()<<"time elapsed in astar:"<<t.elapsed();
+     vector<mygraph_t::vertex_descriptor> p(num_vertices(g));
+     vector<cost> d(num_vertices(g));
+     QTime t;
+     t.start();
+     try
+     {
+         dijkstra_shortest_paths( g, vertex(from, g), predecessor_map(&p[to]).distance_map(&d[to]));
+     }
+     catch( found_goal fg )
+     {
+         qDebug()<<"time elapsed in astar:"<<t.elapsed();
 //         t.restart();
 //         list<vertex> shortest_path;
 //         for(vertex v = goal; ; v = p[v])
@@ -868,9 +867,9 @@ bool TMap::findPath( int from, int to )
 //             //qDebug()<<"added to DirList:"<<mDirList.back();
 //             curRoom = *spi;
 //         }
-//        qDebug()<<"time elapsed building path"<<t.elapsed();
-//         return true;
-//     }
+        qDebug()<<"time elapsed building path"<<t.elapsed();
+         return true;
+     }
 
      return false;
 }

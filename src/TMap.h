@@ -40,6 +40,14 @@ class T2DMap;
 #include <QColor>
 #include <QPixmap>
 #include <QVector3D>
+#include <boost/graph/use_mpi.hpp>
+#include <boost/config.hpp>
+#include <boost/throw_exception.hpp>
+#include <boost/graph/depth_first_search.hpp>
+#include <boost/graph/distributed/mpi_process_group.hpp>
+#include <boost/graph/distributed/adjacency_list.hpp>
+
+using boost::graph::distributed::mpi_process_group;
 
 class dlgMapper;
 
@@ -178,14 +186,12 @@ public:
 
     QMap<QString, int> pixNameTable;
     QMap<int, QPixmap> pixTable;
-    typedef adjacency_list<vecS, distributedS<boost::graph::distributed::mpi_process_group, vecS>, directedS, mapRoom, roomExit > mygraph_t;
+    typedef adjacency_list<vecS, distributedS<mpi_process_group, vecS>, directedS, mapRoom, roomExit > mygraph_t;
     //typedef property_map<mygraph_t, edge_weight_t>::type WeightMap;
     typedef mygraph_t::vertex_descriptor vertex;
     typedef mygraph_t::edge_descriptor edge_descriptor;
 //    typedef mygraph_t::vertex_iterator vertex_iterator;
     typedef std::pair<int, int> edge;
-    typedef boost::graph::distributed::mpi_process_group mpi_process_group;
-    mpi_process_group mpg;
     mygraph_t g;
     //WeightMap weightmap;
     std::vector<location> locations;
