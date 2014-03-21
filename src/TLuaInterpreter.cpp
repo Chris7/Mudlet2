@@ -25,6 +25,7 @@
 #include <QRegExp>
 #include <QNetworkAccessManager>
 #include <QSslConfiguration>
+#include <QStringBuilder>
 #include <QDesktopServices>
 #include "TLuaInterpreter.h"
 #include "TForkedProcess.h"
@@ -11013,23 +11014,37 @@ void TLuaInterpreter::initLuaGlobals()
 
 void TLuaInterpreter::loadGlobal()
 {
-# // Load relatively to MacOS inside Resources when we're in a .app bundle,
-# // as mudlet-lua always gets copied in by the build script into the bundle
-#if defined(Q_OS_MAC)
-    QString path = QCoreApplication::applicationDirPath() + "/../Resources/mudlet-lua/lua/LuaGlobal.lua";
-#else
-    QString path = "../src/mudlet-lua/lua/LuaGlobal.lua";
-    // Additional "../src/" allows location of lua code when object code is in a
-    // directory alongside src directory as occurs using Qt Creator "Shadow Builds"
-#endif
-
-    int error = luaL_dofile( pGlobalLua, path.toLatin1().data() );
+    // Adjust the path to look in mudlet system dir which depends to a certain
+    // extent on who compiles the code, ALSO change to THAT directory temporarily:
+    QString luaCommandString = QString( "package.path = package.path .. ';" % mudlet::self()->getSystemLuaPath() % "' lfs.chdir('" % mudlet::self()->getSystemLuaPath() % "') " );
+    int error = luaL_dostring( pGlobalLua, luaCommandString.toLatin1().data() );
     if( error != 0 )
     {
         string e = "no error message available from Lua";
         if( lua_isstring( pGlobalLua, 1 ) )
         {
-            e = "[ ERROR ]  -  LuaGlobal.lua compile error - please report! ";
+            e = "Lua error:";
+            e+=lua_tostring( pGlobalLua, 1 );
+        }
+        QString msg = "[ ERROR ] -  Cannot set the path to the Mudlet Lua main file LuaGlobal.lua.\n"
+                      "             Mudlet specific functions will not be available. ";
+        msg.append( e.c_str() );
+        gSysErrors << msg;
+    }
+    else
+    {
+        QString msg = "[  OK  ]  -  Lua search path set to include Mudlet lua files in:\n"
+                      "             " % mudlet::self()->getSystemLuaPath() % QDir::separator();
+        gSysErrors << msg;
+    }
+
+    error = luaL_dofile( pGlobalLua, QString( mudlet::self()->getSystemLuaPath() % QDir::separator() % "LuaGlobal.lua" ).toLatin1().data() );
+    if( error != 0 )
+    {
+        string e = "no error message available from Lua";
+        if( lua_isstring( pGlobalLua, 1 ) )
+        {
+            e = "[ ERROR ] -  LuaGlobal.lua compile error - please report! ";
             e += "Error from Lua: ";
             e += lua_tostring( pGlobalLua, 1 );
         }
@@ -11040,6 +11055,28 @@ void TLuaInterpreter::loadGlobal()
         gSysErrors << "[  OK  ]  -  mudlet-lua API & Geyser Layout manager loaded.";
     }
 
+    //Now change the current directory (back?) to the mudlet executable's one
+    //TODO: is this directory the best to use?
+    luaCommandString = QString( "lfs.chdir('" % qApp->applicationDirPath() % "') " );
+    error = luaL_dostring( pGlobalLua, luaCommandString.toLatin1().data() );
+    if( error != 0 )
+    {
+        string e = "no error message available from Lua";
+        if( lua_isstring( pGlobalLua, 1 ) )
+        {
+            e = "Lua error:";
+            e+=lua_tostring( pGlobalLua, 1 );
+        }
+        QString msg = "[ ERROR ] -  Cannot set the lua current directory to the Mudlet application's one! ";
+        msg.append( e.c_str() );
+        gSysErrors << msg;
+    }
+    else
+    {
+        QString msg = "[  OK  ]  -  Lua current directory set to:\n"
+                      "             " % qApp->applicationDirPath() % QDir::separator();
+        gSysErrors << msg;
+    }
 }
 
 void TLuaInterpreter::slotEchoMessage(int hostID, QString msg)
