@@ -120,7 +120,8 @@ local packages = {
 
 --recent fiddling with lists of possible locations of Lua files is now handled
 --in Mudlet executable which both now adds the location to the Lua interpreter
---and also changes to the directory before loading and executing this file.
+--and also changes to the directory before loading and executing this file;
+--it also changes to the executable's directory afterwards.
 
 for _, package in ipairs(packages) do
 --    local result, msg = pcall(dofile, prefix .. package)
