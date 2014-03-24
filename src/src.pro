@@ -2,6 +2,7 @@ QMAKE_CXXFLAGS_RELEASE += -O3 -Wno-deprecated-declarations -Wno-unused-local-typ
 QMAKE_CXXFLAGS_DEBUG += -g -Wno-deprecated-declarations -Wno-unused-local-typedefs -Wno-unused-parameter
 #MOC_DIR = ./tmp
 #OBJECTS_DIR = ./tmp
+CONFIG += windows x11 resources thread largefile
 QT += network opengl uitools multimedia
 DEPENDPATH += .
 INCLUDEPATH += .
@@ -30,8 +31,10 @@ RESOURCES = mudlet_alpha.qrc
 # (Geyser files should be in a "geyser" subdirectory of this)
 
 unix: {
+    OWNER=root
+    GROUP=users
 # Distribution packagers would be using PREFIX = /usr but this is accepted
-# destination place for local builds for software for all users
+# destination place for local builds for software for all users:
     isEmpty( PREFIX ) PREFIX = /usr/local
     isEmpty( DATAROOTDIR ) DATAROOTDIR = $${PREFIX}/share
     isEmpty( DATADIR ) DATADIR = $${DATAROOTDIR}/mudlet
@@ -50,6 +53,10 @@ unix: {
     INCLUDEPATH += /usr/include/lua5.1
     LUA_DEFAULT_DIR = $${DATADIR}/lua
     SOURCES += lua-yajl2-linux.c
+    ! contains( $${PWD}, $${OUT_PWD} ) {
+       message("Copying scripts to build directory...")
+       system("cp $${PWD}/rewriteMakefile.* $${OUT_PWD}")
+    }
 } else:win32: {
     LIBS += -L"C:\\mudlet5_package" \
         -L"C:\\mingw32\\lib" \
@@ -76,8 +83,9 @@ unix: {
 }
 
 unix {
-    mudlet.path = $${BINDIR}/
-    message("Mudlet will be installed to "$${mudlet.path}"...")
+#   the "target" install set is handled automagically, just not very well...
+    target.path = $${BINDIR}
+    message("$${TARGET} will be installed to "$${target.path}"...")
 #     DOCS.path = $${DOCS_DIR}
 #     message("Documentation will be installed to "$${DOCS.path}"...")
     !isEmpty( LUA_DEFAULT_DIR ) {
@@ -338,17 +346,8 @@ OTHER_FILES += \
 # or via enviromental variable SUDO_ASKPASS to something like ssh-askpass
 # to provide a graphic password requestor needed to install software
 unix {
-# install mudlet executable:
-    mudlet.commands = sudo -A sh -c \" install -o root -g users -p -d $${mudlet.path} && install -o root -g users -p -t $${mudlet.path} $${TARGET} \"
-# install documentation (once we know what they are):
-#     DOCS.commands = sudo -A sh -c \" install -o root -g users -d $${DOCS.path} && install -o root -g users -p -t $${DOCS.path} $${DOCS.files} \"
-# install lua files to default location coded into mudlet::readSetting() and
-# used in TLuaInterpreter::loadGlobal():
-    LUA.commands = sudo -A sh -c \" install -o root -g users -d $${LUA.path} && install -o root -g users -p -t $${LUA.path} $${LUA.files} \"
-# install geyser files:
-    LUA_GEYSER.commands = sudo -A sh -c \" install -o root -g users -d $${LUA_GEYSER.path} && install -o root -g users -p -t $${LUA.path} $${LUA.files} ; sudo -k \"
 # say what we want to get installed by "make install" (executed by 'deployment' step):
-    INSTALLS += mudlet LUA LUA_GEYSER
+    INSTALLS += target LUA LUA_GEYSER
 }
 # Other OS's have other installation routines - perhap they could be duplicated here?
 
