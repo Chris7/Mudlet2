@@ -2,7 +2,6 @@ QMAKE_CXXFLAGS_RELEASE += -O3 -Wno-deprecated-declarations -Wno-unused-local-typ
 QMAKE_CXXFLAGS_DEBUG += -g -Wno-deprecated-declarations -Wno-unused-local-typedefs -Wno-unused-parameter
 #MOC_DIR = ./tmp
 #OBJECTS_DIR = ./tmp
-CONFIG += windows x11 resources thread largefile
 QT += network opengl uitools multimedia
 DEPENDPATH += .
 INCLUDEPATH += .
@@ -31,8 +30,6 @@ RESOURCES = mudlet_alpha.qrc
 # (Geyser files should be in a "geyser" subdirectory of this)
 
 unix: {
-    OWNER=root
-    GROUP=users
 # Distribution packagers would be using PREFIX = /usr but this is accepted
 # destination place for local builds for software for all users:
     isEmpty( PREFIX ) PREFIX = /usr/local
