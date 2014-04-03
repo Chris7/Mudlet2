@@ -50,10 +50,6 @@ unix: {
     INCLUDEPATH += /usr/include/lua5.1
     LUA_DEFAULT_DIR = $${DATADIR}/lua
     SOURCES += lua-yajl2-linux.c
-    ! contains( $${PWD}, $${OUT_PWD} ) {
-       message("Copying scripts to build directory...")
-       system("cp $${PWD}/rewriteMakefile.* $${OUT_PWD}")
-    }
 } else:win32: {
     LIBS += -L"C:\\mudlet5_package" \
         -L"C:\\mingw32\\lib" \
@@ -298,8 +294,27 @@ FORMS += ui/connection_profiles.ui \
     ui/custom_lines.ui \
     ui/vars_main_area.ui
 
-# Documentation files:
-# DOCS.files =
+# To use QtCreator as a Unix installer the generated Makefile must have the
+# following lists of files EXPLICITLY stated - IT IS NOT WORKABLE IF ONLY
+# A PATH IS GIVEN AS AN ENTRY TO THE .files LIST - as was the case for a
+# previous incarnation for macs.
+#
+# Select Qt Creator's "Project" Side tab and under the "Build and Run" top tab
+# choose your Build Kit's "Run"->"Run Settings" ensure you have a "Make" step
+# that - if you are NOT runnning QT Creator as root, which is the safest way
+# (i.e safe = NOT root) - against:
+# "Override <path to?>/make" has the entry: "/usr/bin/sudo"
+# without the quotes, assuming /usr/bin is the location of "sudo"
+# and against:
+# "Make arguments" has the entry: "-A sh -c '/usr/bin/make install'"
+# without the DOUBLE quotes but with the SINGLE quotes, assuming /usr/bin is the
+# location of "make"
+#
+# This then will run "make install" via sudo with root privileges when you use
+# the relevant "Deploy" option on the "Build" menu - and will ask you for YOUR
+# password via a GUI dialog if needed - so that the files can be placed in the
+# specified system directories to which a normal user (you?) does not have write
+# access normally.
 
 # Main lua files:
 LUA.files = \
@@ -332,6 +347,10 @@ LUA_GEYSER.files = \
     $${PWD}/mudlet-lua/lua/geyser/GeyserTests.lua
 LUA_GEYSER.depends = mudlet
 
+# Documentation files:
+# DOCS.files =
+
+
 # Pull the docs and lua files into the project so they show up in the Qt Creator project files list
 OTHER_FILES += \
 #     ${DOCS.files} \
@@ -344,7 +363,10 @@ OTHER_FILES += \
 # to provide a graphic password requestor needed to install software
 unix {
 # say what we want to get installed by "make install" (executed by 'deployment' step):
-    INSTALLS += target LUA LUA_GEYSER
+    INSTALLS += \
+        target \
+        LUA \
+        LUA_GEYSER
 }
 # Other OS's have other installation routines - perhap they could be duplicated here?
 
