@@ -1,3 +1,10 @@
+################################################################################
+# MERGING INSTRUCTIONS: to merge in "mudletDev_customExitsFixAndEnhance" as    #
+# (pull request #32 to www.github.com/Chris7/Mudlet2/mudletDev) after this has #
+# been done as pull request #31                                                #
+# Take ALL changes from this side                                              #
+# THEN add in "custom_exit_properties.ui" onto end of "FORMS=" from other side #
+################################################################################
 QMAKE_CXXFLAGS_RELEASE += -O3 -Wno-deprecated-declarations -Wno-unused-local-typedefs -Wno-unused-parameter
 QMAKE_CXXFLAGS_DEBUG += -g -Wno-deprecated-declarations -Wno-unused-local-typedefs -Wno-unused-parameter
 #MOC_DIR = ./tmp
@@ -11,43 +18,91 @@ LIBLUA = -llua5.1
 # automatically link to LuaJIT if it exists
 #exists(/usr/lib/x86_64-linux-gnu/libluajit-5.1.a):LIBLUA = -L/usr/lib/x86_64-linux-gnu/ -lluajit-5.1
 
-unix:LIBS += -lpcre \
-    $$LIBLUA \
-    -lhunspell \
-    -L/usr/local/lib/ \
-    -lyajl \
-    -lGLU \
-    -lzip \
-    -lz
+TEMPLATE = app
+TARGET = mudlet
+RESOURCES = mudlet_alpha.qrc
 
-win32:LIBS += -L"C:\\mudlet5_package" \
-    -L"C:\\mingw32\\lib" \
-    -llua51 \
-    -lpcre \
-    -lhunspell \
-    -llibzip \
-    -lzlib \
-    -llibzip \
-    -L"C:\\mudlet5_package\\yajl-master\\yajl-2.0.5\\lib" \
-    -lyajl
+# try -O1 —fsanitize=address for AddressSanitizer w/ clang
+# use -DDEBUG_TELNET to show telnet commands
 
-unix:INCLUDEPATH += /usr/include/lua5.1
+# Specify default location for Lua files, in OS specific LUA_DEFAULT_DIR value
+# below, if this is not done then a hardcoded default of a ./mudlet-lua/lua
+# from the executable's location will be used.  Mudlet will now moan and ask
+# the user to find them if the files (and specifically the <10KByte
+# "LuaGlobal.lua" one) is not accessable (read access only required) during
+# startup.  The precise directory is remembered once found (and stored in the
+# Mudlet configuration file as "systemLuaFilePath") but if the installer places
+# the files in the place documented here the user will not be bothered by this.
+#
+# (Geyser files should be in a "geyser" subdirectory of this)
 
-win32:INCLUDEPATH += "c:\\mudlet_package_MINGW\\Lua_src\\include" \
-    "C:\\mingw32\\include" \
-    "c:\\mudlet_package_MINGW\\zlib-1.2.5" \
-    "C:\\mudlet5_package\\boost_1_54_0" \
-    "c:\\mudlet_package_MINGW\\pcre-8.0-lib\\include" \
-    "C:\\mudlet5_package\\yajl-master\\yajl-2.0.5\\include" \
-    "C:\\mudlet5_package\\libzip-0.11.1\\lib" \
-    "C:\\mudlet_package_MINGW\\hunspell-1.3.1\\src"
-
-unix:isEmpty( INSTALL_PREFIX ):INSTALL_PREFIX = /usr/local
 unix: {
-    SHARE_DIR = /usr/local/share/mudlet
-    BIN_DIR = $$INSTALL_PREFIX/bin
+# Distribution packagers would be using PREFIX = /usr but this is accepted
+# destination place for local builds for software for all users:
+    isEmpty( PREFIX ) PREFIX = /usr/local
+    isEmpty( DATAROOTDIR ) DATAROOTDIR = $${PREFIX}/share
+    isEmpty( DATADIR ) DATADIR = $${DATAROOTDIR}/mudlet
+# According to Linux FHS /usr/local/games is an alternative location for leasure time BINARIES 8-):
+    isEmpty( BINDIR ) BINDIR = $${PREFIX}/bin
+# Again according to FHS /usr/local/share/games is the corresponding place for locally built games documentation:
+    isEmpty( DOCDIR ) DOCDIR = $${DATAROOTDIR}/doc/mudlet
+    LIBS += -lpcre \
+        $$LIBLUA \
+        -lhunspell \
+        -L/usr/local/lib/ \
+        -lyajl \
+        -lGLU \
+        -lzip \
+        -lz
+    INCLUDEPATH += /usr/include/lua5.1
+    LUA_DEFAULT_DIR = $${DATADIR}/lua
+    SOURCES += lua-yajl2-linux.c
+} else:win32: {
+    LIBS += -L"C:\\mudlet5_package" \
+        -L"C:\\mingw32\\lib" \
+        -llua51 \
+        -lpcre \
+        -lhunspell \
+        -llibzip \
+        -lzlib \
+        -llibzip \
+        -L"C:\\mudlet5_package\\yajl-master\\yajl-2.0.5\\lib" \
+        -lyajl
+    INCLUDEPATH += "c:\\mudlet_package_MINGW\\Lua_src\\include" \
+        "C:\\mingw32\\include" \
+        "c:\\mudlet_package_MINGW\\zlib-1.2.5" \
+        "C:\\mudlet5_package\\boost_1_54_0" \
+        "c:\\mudlet_package_MINGW\\pcre-8.0-lib\\include" \
+        "C:\\mudlet5_package\\yajl-master\\yajl-2.0.5\\include" \
+        "C:\\mudlet5_package\\libzip-0.11.1\\lib" \
+        "C:\\mudlet_package_MINGW\\hunspell-1.3.1\\src"
+# Leave this undefined so mudlet::readSettings() preprocessing will fall back to
+# hard-coded executable's /mudlet-lua/lua/ subdirectory
+#    LUA_DEFAULT_DIR = $$clean_path($$system(echo %ProgramFiles%)/lua)
+    SOURCES += lua_yajl.c
 }
+
+unix {
+#   the "target" install set is handled automagically, just not very well...
+    target.path = $${BINDIR}
+    message("$${TARGET} will be installed to "$${target.path}"...")
+#     DOCS.path = $${DOCS_DIR}
+#     message("Documentation will be installed to "$${DOCS.path}"...")
+    !isEmpty( LUA_DEFAULT_DIR ) {
+# if a directory has been set for the lua files move the detail into the
+# installation details for the unix case:
+        LUA.path = $${LUA_DEFAULT_DIR}
+        LUA_GEYSER.path = $${LUA.path}/geyser
+# and define a preprocessor symbol LUA_DEFAULT_PATH with the value:
+        DEFINES += LUA_DEFAULT_PATH=\\\"$${LUA_DEFAULT_DIR}\\\"
+# and say what will happen:
+        message("Lua files will be installed to "$${LUA.path}"...")
+        message("Geyser lua files will be installed to "$${LUA_GEYSER.path}"...")
+    }
+}
+
 INCLUDEPATH += irc/include
+
 SOURCES += TConsole.cpp \
     ctelnet.cpp \
     main.cpp \
@@ -246,18 +301,79 @@ FORMS += ui/connection_profiles.ui \
     ui/custom_lines.ui \
     ui/vars_main_area.ui
 
-win32: {
-    SOURCES += lua_yajl.c
+# To use QtCreator as a Unix installer the generated Makefile must have the
+# following lists of files EXPLICITLY stated - IT IS NOT WORKABLE IF ONLY
+# A PATH IS GIVEN AS AN ENTRY TO THE .files LIST - as was the case for a
+# previous incarnation for macs.
+#
+# Select Qt Creator's "Project" Side tab and under the "Build and Run" top tab
+# choose your Build Kit's "Run"->"Run Settings" ensure you have a "Make" step
+# that - if you are NOT runnning QT Creator as root, which is the safest way
+# (i.e safe = NOT root) - against:
+# "Override <path to?>/make" has the entry: "/usr/bin/sudo"
+# without the quotes, assuming /usr/bin is the location of "sudo"
+# and against:
+# "Make arguments" has the entry: "-A sh -c '/usr/bin/make install'"
+# without the DOUBLE quotes but with the SINGLE quotes, assuming /usr/bin is the
+# location of "make"
+#
+# This then will run "make install" via sudo with root privileges when you use
+# the relevant "Deploy" option on the "Build" menu - and will ask you for YOUR
+# password via a GUI dialog if needed - so that the files can be placed in the
+# specified system directories to which a normal user (you?) does not have write
+# access normally.
+
+# Main lua files:
+LUA.files = \
+    $${PWD}/mudlet-lua/lua/LuaGlobal.lua \
+    $${PWD}/mudlet-lua/lua/StringUtils.lua \
+    $${PWD}/mudlet-lua/lua/TableUtils.lua \
+    $${PWD}/mudlet-lua/lua/DebugTools.lua \
+    $${PWD}/mudlet-lua/lua/DB.lua \
+    $${PWD}/mudlet-lua/lua/GUIUtils.lua \
+    $${PWD}/mudlet-lua/lua/Other.lua \
+    $${PWD}/mudlet-lua/lua/GMCP.lua
+LUA.depends = mudlet
+
+# Geyser lua files:
+LUA_GEYSER.files = \
+    $${PWD}/mudlet-lua/lua/geyser/Geyser.lua \
+    $${PWD}/mudlet-lua/lua/geyser/GeyserGeyser.lua \
+    $${PWD}/mudlet-lua/lua/geyser/GeyserUtil.lua \
+    $${PWD}/mudlet-lua/lua/geyser/GeyserColor.lua \
+    $${PWD}/mudlet-lua/lua/geyser/GeyserSetConstraints.lua \
+    $${PWD}/mudlet-lua/lua/geyser/GeyserContainer.lua \
+    $${PWD}/mudlet-lua/lua/geyser/GeyserWindow.lua \
+    $${PWD}/mudlet-lua/lua/geyser/GeyserLabel.lua \
+    $${PWD}/mudlet-lua/lua/geyser/GeyserGauge.lua \
+    $${PWD}/mudlet-lua/lua/geyser/GeyserMiniConsole.lua \
+    $${PWD}/mudlet-lua/lua/geyser/GeyserMapper.lua \
+    $${PWD}/mudlet-lua/lua/geyser/GeyserReposition.lua \
+    $${PWD}/mudlet-lua/lua/geyser/GeyserHBox.lua \
+    $${PWD}/mudlet-lua/lua/geyser/GeyserVBox.lua \
+    $${PWD}/mudlet-lua/lua/geyser/GeyserTests.lua
+LUA_GEYSER.depends = mudlet
+
+# Documentation files:
+# DOCS.files =
+
+
+# Pull the docs and lua files into the project so they show up in the Qt Creator project files list
+OTHER_FILES += \
+#     ${DOCS.files} \
+    ${LUA.files} \
+    ${LUA_GEYSER.files}
+
+# Unix Makefile installer:
+# lua file installation, needs install, sudo, and a setting in /etc/sudo.conf
+# or via enviromental variable SUDO_ASKPASS to something like ssh-askpass
+# to provide a graphic password requestor needed to install software
+unix {
+# say what we want to get installed by "make install" (executed by 'deployment' step):
+    INSTALLS += \
+        target \
+        LUA \
+        LUA_GEYSER
 }
+# Other OS's have other installation routines - perhap they could be duplicated here?
 
-unix: {
-    SOURCES += lua-yajl2-linux.c
-}
-
-TEMPLATE = app
-TARGET = mudlet
-RESOURCES = mudlet_alpha.qrc
-
-
-# try -O1 —fsanitize=address for AddressSanitizer w/ clang
-# use -DDEBUG_TELNET to show telnet commands

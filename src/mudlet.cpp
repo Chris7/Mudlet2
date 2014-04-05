@@ -391,6 +391,7 @@ mudlet::mudlet()
     menuBar()->addAction(mactionHelp);*/
     readSettings();
 
+
     QTimer * timerAutologin = new QTimer( this );
     timerAutologin->setSingleShot( true );
     connect(timerAutologin, SIGNAL(timeout()), this, SLOT(startAutoLogin()));
@@ -1692,6 +1693,108 @@ void mudlet::readSettings()
     mTEFolderIconSize = settings.value("tefoldericonsize", QVariant(3)).toInt();
     mShowMenuBar = settings.value("showMenuBar",QVariant(0)).toBool();
     mShowToolbar = settings.value("showToolbar",QVariant(0)).toBool();
+
+// This bit is to accomodate the various places that could be used to store the
+// Mudlet specific lua files; because, like the Mudlet executable, they are
+// common to all users in a multi-user environment but different systems handle
+// this in different ways.  Apparently not all builders even use the Qt src.pro
+// file which would be one place to start to handle this.  The bottom line is now
+// that if Mudlet can't find them on start-up it will moan and give the user a
+// chance to find the missing files but it is better if it given the correct place
+// to start with.  If your OS type is not explictly covered in a project file or
+// below but it does have a Qt Q_OS_**** defined then please pass the details
+// back to the developers!
+
+#if defined(LUA_DEFAULT_PATH)
+    mSystemLuaFilePath = settings.value("systemLuaFilesPath", QString(LUA_DEFAULT_PATH)).toString();
+#elif defined(Q_OS_MAC)
+// Load relatively to MacOS inside Resources when we're in a .app bundle,
+// as mudlet-lua always gets copied in by the build script into the bundle
+    mSystemLuaFilePath = settings.value("systemLuaFilesPath", QString(QCoreApplication::applicationDirPath() % "/../Resources/mudlet-lua/lua")).toString();
+#elif defined(Q_OS_WIN)
+// %CommonProgramFiles%/mudlet/lua is suggested but not sure if Qt has an easy
+// way to decode that, even better if this could be set in the project file
+    mSystemLuaFilePath = settings.value("systemLuaFilesPath", QString(QCoreApplication::applicationDirPath() % "/mudlet-lua/lua")).toString();
+#else
+#error Note to compiler: Please add a suitable OS test and location as appropriate for your OS in project file
+// or if just building for yourself you may remove the above error directive and
+// accept the current choice of a subdirectory of the actual mudlet executable.
+    mSystemLuaFilePath = settings.value("systemLuaFilesPath", QString(QCoreApplication::applicationDirPath() % "/mudlet-lua/lua")).toString();
+#endif
+    QFile luaGlobalFile( mSystemLuaFilePath % "/LuaGlobal.lua" );
+    bool ok = false;
+    if( luaGlobalFile.exists() )
+    {
+        if( luaGlobalFile.open(QIODevice::ReadOnly) )
+        {
+            ok = true;
+            luaGlobalFile.close();
+        }
+    }
+
+    QString newLuaGlobalPath = mSystemLuaFilePath;
+    while( ! ok )
+    {
+        QMessageBox msgBox;
+        msgBox.setWindowTitle("Attention!");
+        msgBox.setWindowIcon(QIcon(":/icons/mudlet_important.png"));
+        msgBox.setTextFormat(Qt::RichText);
+        msgBox.setText("<bold><big>Essential Lua files not found!</big></bold>");
+        msgBox.setInformativeText("Mudlet's \"LuaGlobal.lua\" file's location is not known.\nPlease show Mudlet where to find it...");
+        msgBox.setDetailedText("If Mudlet has recently been installed or updated some extra files are not "
+            "where they are expected.  You will next be requested to find a particular one "
+            "from which Mudlet should find the remainder that it needs.  After this has been "
+            "done once, Mudlet can remember it and should not show this request again.  If "
+            "you cannot complete this next step abort it by pressing the Cancel button; "
+            "Mudlet will not be able to operate correctly and you should close the "
+            "application.  You may then wish to seek out help, e.g. in the Mudlet forums at: "
+            "http://forums.mudlet.org .\n\n"
+            "Please note that some source distributions of Mudlet once contained an "
+            "larger file with the same name which had a size in the order of 60KBytes, "
+            "the file being sought is less than 10KBytes in size, your selection will be "
+            "checked and a file larger than this limit will be rejected so you can try "
+            "again...");
+        msgBox.setStandardButtons(QMessageBox::Ok);
+        msgBox.setDefaultButton(QMessageBox::Ok);
+        msgBox.setIconPixmap(QPixmap(":/icons/mudlet_important.png"));
+        msgBox.setMinimumSize( 400, 300 );
+        msgBox.exec();
+        QString dummyFileName = QFileDialog::getOpenFileName(0,
+                                        "Please find Mudlet's LuaGlobal.lua file",
+                                        newLuaGlobalPath,
+                                        tr("Mudlet's main Lua file (LuaGlobal.lua)"),
+                                        0,
+                                        QFileDialog::ReadOnly);
+        // 4th argument forces only the specified file (in brackets) to be shown
+        if( ! dummyFileName.isEmpty() )
+        {
+            luaGlobalFile.setFileName( dummyFileName );
+            if( luaGlobalFile.exists() && luaGlobalFile.size() < 10000 )
+            {
+                if( luaGlobalFile.open(QIODevice::ReadOnly) )
+                {
+                    QFileInfo luaGlobalFileInfo( luaGlobalFile );
+                    newLuaGlobalPath = luaGlobalFileInfo.canonicalPath();
+                    ok = true;
+                    luaGlobalFile.close();
+                }
+            }
+        }
+        else
+        {
+            QMessageBox::critical(0, "Critical warning",
+                                  "Mudlet was unable to locate LuaGlobal.lua.  You should close it and seek advice.");
+            qCritical("mudlet::readSettings() Mudlet was unable to locate LuaGlobal.lua.  You should close it and seek advice.");
+            break;
+        }
+    }
+
+    if( ok && newLuaGlobalPath.length() && newLuaGlobalPath != mSystemLuaFilePath )
+    {
+        settings.setValue("systemLuaFilesPath", newLuaGlobalPath);
+        mSystemLuaFilePath = newLuaGlobalPath;
+    }
+
     resize( size );
     move( pos );
     setIcoSize( mMainIconSize );
@@ -1742,6 +1845,7 @@ void mudlet::writeSettings()
     settings.setValue("showMenuBar", mShowMenuBar );
     settings.setValue("showToolbar", mShowToolbar );
     settings.setValue("maximized", isMaximized());
+    settings.setValue("systemLuaFilesPath", mSystemLuaFilePath );
 }
 
 void mudlet::connectToServer()

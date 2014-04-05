@@ -142,6 +142,7 @@ public:
    void                          deselect( Host * pHost, QString & name );
    void                          stopSounds();
    void                          playSound( QString s );
+   QString                      getSystemLuaPath() { return mSystemLuaFilePath; }
    QTime                         mReplayTime;
    int                           mReplaySpeed;
    QToolBar *                    mpMainToolBar;
@@ -256,6 +257,13 @@ private:
    QPushButton *                 moduleInstallButton;
    QPushButton *                 moduleHelpButton;
 
+   void                         setSystemLuaPath();
+                                // Not implimented yet, might be required if option to change this
+                                // put into preferences dialog
+   QString                      mSystemLuaFilePath;
+                                // Path to where LuaGlobal.lua is, stored in main QSettings "location"
+                                // Ideally an installer program should store the required value there so
+                                // the user doesn't get asked to go and find it on first time start-up
 };
 
 class TConsoleMonitor : public QObject
