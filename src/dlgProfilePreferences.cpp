@@ -352,6 +352,78 @@ dlgProfilePreferences::dlgProfilePreferences( QWidget * pF, Host * pH )
     connect(mFORCE_MCCP_OFF, SIGNAL(clicked()), need_reconnect_for_specialoption, SLOT(show()));
     connect(mFORCE_GA_OFF, SIGNAL(clicked()), need_reconnect_for_specialoption, SLOT(show()));
 
+/* DEBUGCONTROLS 0 - Insert debug variable controls
+ * they go into groupbox_debug and are initalised from variables in THost.cpp
+ * (per profile) or mudlet.cpp (application wide).  The controls are to be
+ * connected to corresponding slots to adjust those variables via "slot_"'s
+ * in the appropriate one of those files.
+ *
+ * Use a QHBoxLayout for each control or group of controls and add that layout
+ * into "verticalLayout_debug" - which is on the last tab of the
+ * profile_preference dialog.
+ *
+ *  From SlySven:
+ */
+    QHBoxLayout * horizontalLayout_RoomOpacity = new QHBoxLayout( 0 );
+    horizontalLayout_RoomOpacity->setAlignment(Qt::AlignLeft);
+    QLabel * label_RoomOpacity = new QLabel("Reduce Room Symbol visibility on 2D map.", 0 );
+    label_RoomOpacity->setTextFormat(Qt::PlainText);
+    label_RoomOpacity->adjustSize();
+    QSpinBox * spinBox_RoomOpacity = new QSpinBox( 0 );
+    spinBox_RoomOpacity->setStatusTip("Enables checking of exit line detail close to or under room symbol in 2D maps.");
+    spinBox_RoomOpacity->setRange(0, 255);
+    spinBox_RoomOpacity->setSingleStep(16);
+    spinBox_RoomOpacity->setSpecialValueText("Normal");
+    spinBox_RoomOpacity->setValue( mpHost->mDebug_RoomTransparency );
+    connect(spinBox_RoomOpacity, SIGNAL(valueChanged(int)), mpHost, SLOT( slot_setRoomOpacity(int) ));
+    spinBox_RoomOpacity->adjustSize();
+    horizontalLayout_RoomOpacity->addWidget(spinBox_RoomOpacity);
+    horizontalLayout_RoomOpacity->addWidget(label_RoomOpacity);
+    verticalLayout_debugOptions->addLayout(horizontalLayout_RoomOpacity);
+
+    QHBoxLayout * horizontalLayout_ForceSourceLuaFilesUsage = new QHBoxLayout( 0 );
+    horizontalLayout_ForceSourceLuaFilesUsage->setAlignment(Qt::AlignLeft);
+    QLabel * label_ForceSourceLuaFilesUsage = new QLabel("Use Mudlet Lua files from build (./src/mudlet-lua/lua) location.", 0 );
+    label_ForceSourceLuaFilesUsage->setTextFormat(Qt::PlainText);
+    label_ForceSourceLuaFilesUsage->adjustSize();
+    QCheckBox * checkBox_ForceSourceLuaFilesUsage = new QCheckBox( 0 );
+    checkBox_ForceSourceLuaFilesUsage->setStatusTip("Ignore the location stored in the (per user) Mudlet config file for following profile connections.");
+    checkBox_ForceSourceLuaFilesUsage->setChecked( mudlet::self()->mDebug_forceSourceLuaFilesUsage );
+    connect(checkBox_ForceSourceLuaFilesUsage, SIGNAL(stateChanged(int)), mudlet::self(), SLOT( slot_setForceSourceLuaFilesUsage(int) ));
+    checkBox_ForceSourceLuaFilesUsage->adjustSize();
+    horizontalLayout_ForceSourceLuaFilesUsage->addWidget(checkBox_ForceSourceLuaFilesUsage);
+    horizontalLayout_ForceSourceLuaFilesUsage->addWidget(label_ForceSourceLuaFilesUsage);
+    verticalLayout_debugOptions->addLayout(horizontalLayout_ForceSourceLuaFilesUsage);
+/*
+ *
+ *  From Heiko
+ *
+ */
+
+/*
+ *
+ *  From Valdim
+ *
+ */
+
+/*
+ *
+ *  From Chris
+ *
+ */
+
+/*
+ *
+ *  Others(?)
+ *
+ */
+
+/*  End of Insert debug variable controls
+ *  Now add them all into layout:
+ */
+    verticalLayout_debugOptions->setAlignment(Qt::AlignTop);
+    groupBox_Debug->setLayout(verticalLayout_debugOptions);
+
     Host * pHost = mpHost;
     if( pHost )
     {
@@ -1566,6 +1638,44 @@ qDebug()<<"after console refresh: Left border width:"<<pHost->mBorderLeftWidth<<
     close();
 }
 
+/* DEBUGCONTROLS 4S - Auxillary inter-control slots definitions
+ * needed only if one debug control is modified by the action of another.
+ *
+ * Will have to "find" any controls { with findChild() ? } we have added if we
+ * need to modify them, as they won't be in the files that the MOC produces.
+ * Not essential but might be helpful if the same name is give to the local
+ * pointer here as in this dialog's constructor...
+ *
+ * Don't forget to call update(), if you change anything, to refresh any
+ * modified controls...!
+ *
+ * From SlySven:
+ */
 
+/*
+ *
+ *
+ * From Heiko
+ */
 
+/*
+ *
+ *
+ * From Valdim
+ */
 
+/*
+ *
+ *
+ * From Chris
+ */
+
+/*
+ *
+ *
+ * From Others(?)
+ */
+
+/*
+ * End of Auxillary inter-control slots definitions
+ */

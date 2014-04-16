@@ -100,6 +100,44 @@ mudlet::mudlet()
     , version( "Mudlet 3.0-rc1" )
 #endif
 , mpCurrentActiveHost( 0 )
+/* DEBUGCONTROLS 3A - Application wide debug variable default values
+ * controls in dlgProfilePreferences here. This is for application wide
+ * settings, per profile ones go in Host.cpp
+ *
+ * If we leave a few lines of space between each other's controls it should(?)
+ * make it easier for patch program to change things
+ *
+ * From SlySven
+ */
+, mDebug_forceSourceLuaFilesUsage( false )
+
+/*
+ *
+ *
+ * From Heiko
+ */
+
+/*
+ *
+ *
+ * From Valdim
+ */
+
+/*
+ *
+ *
+ * From Chris
+ */
+
+/*
+ *
+ *
+ * From Others(?)
+ */
+
+/*
+ * End of Application wide debug variable default values
+ */
 , mIsGoingDown( false )
 , actionReplaySpeedDown( 0 )
 , actionReplaySpeedUp( 0 )
@@ -1693,6 +1731,7 @@ void mudlet::readSettings()
     mTEFolderIconSize = settings.value("tefoldericonsize", QVariant(3)).toInt();
     mShowMenuBar = settings.value("showMenuBar",QVariant(0)).toBool();
     mShowToolbar = settings.value("showToolbar",QVariant(0)).toBool();
+    mDebug_forceSourceLuaFilesUsage = settings.value("forceSourceLuaFilesUsage",QVariant(0)).toBool();
 
 // This bit is to accomodate the various places that could be used to store the
 // Mudlet specific lua files; because, like the Mudlet executable, they are
@@ -1704,7 +1743,6 @@ void mudlet::readSettings()
 // to start with.  If your OS type is not explictly covered in a project file or
 // below but it does have a Qt Q_OS_**** defined then please pass the details
 // back to the developers!
-
 #if defined(LUA_DEFAULT_PATH)
     mSystemLuaFilePath = settings.value("systemLuaFilesPath", QString(LUA_DEFAULT_PATH)).toString();
 #elif defined(Q_OS_MAC)
@@ -1721,6 +1759,7 @@ void mudlet::readSettings()
 // accept the current choice of a subdirectory of the actual mudlet executable.
     mSystemLuaFilePath = settings.value("systemLuaFilesPath", QString(QCoreApplication::applicationDirPath() % "/mudlet-lua/lua")).toString();
 #endif
+
     QFile luaGlobalFile( mSystemLuaFilePath % "/LuaGlobal.lua" );
     bool ok = false;
     if( luaGlobalFile.exists() )
@@ -1845,6 +1884,7 @@ void mudlet::writeSettings()
     settings.setValue("showMenuBar", mShowMenuBar );
     settings.setValue("showToolbar", mShowToolbar );
     settings.setValue("maximized", isMaximized());
+    settings.setValue("forceSourceLuaFilesUsage", mDebug_forceSourceLuaFilesUsage );
     settings.setValue("systemLuaFilesPath", mSystemLuaFilePath );
 }
 
@@ -2532,3 +2572,56 @@ void mudlet::playSound( QString s )
         mpMusicBox4->play();
     }
 }
+
+
+QString mudlet::getSystemLuaPath()
+{
+    // As we have kept mSystemLuaFilePath private if we clobber the value
+    // here it should not break things outside of this file!  8-)
+    if( mDebug_forceSourceLuaFilesUsage )
+    {
+        QString path = QCoreApplication::applicationDirPath() % "/../src/mudlet-lua/lua";
+        QDir pathDir(path);
+        return pathDir.canonicalPath();
+    }
+    else
+        return mSystemLuaFilePath;
+}
+
+
+/* DEBUGCONTROLS 4A - Application wide debug control adjustment slots
+ *
+ * From SlySven
+ */
+void mudlet::slot_setForceSourceLuaFilesUsage( int state )
+{
+    mDebug_forceSourceLuaFilesUsage = (state==Qt::Checked);
+}
+
+/*
+ *
+ *
+ * From Heiko
+ */
+
+/*
+ *
+ *
+ * From Valdim
+ */
+
+/*
+ *
+ *
+ * From Chris
+ */
+
+/*
+ *
+ *
+ * From Others(?)
+ */
+
+/*
+ * End of Application wide debug control adjustment slots
+ */

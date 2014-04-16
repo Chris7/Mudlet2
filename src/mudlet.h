@@ -56,158 +56,229 @@ Q_OBJECT
 
 public:
 
-                                 mudlet();
+                                mudlet();
                                 ~mudlet();
-   static                        mudlet * self();
-   void                          addSubWindow(TConsole* p);
-   int                           getColumnNumber( Host * pHost, QString & name );
-   int                           getLineNumber( Host * pHost, QString & name );
-   void                          printSystemMessage( Host * pH, QString & s );
-   void                          print( Host *, QString & );
-   void                          addConsoleForNewHost( Host * pH );
-   void							 disableToolbarButtons();
-   void							 enableToolbarButtons();
-   Host *                        getActiveHost();
-   void                          registerTimer( TTimer *, QTimer * );
-   void                          unregisterTimer( QTimer * );
-   bool                          openWindow( Host *, QString & );
-   bool                          createMiniConsole( Host *, QString &, int, int, int, int );
-   bool                          createLabel( Host *, QString &, int, int, int, int, bool );
-   bool                          echoWindow( Host *, QString &, QString & );
-   bool                          echoLink( Host * pHost, QString & name, QString & text, QStringList &, QStringList &, bool customFormat=false );
-   void                          insertLink( Host *, QString &, QString, QStringList &, QStringList &, bool customFormat=false );
-   bool                          appendBuffer( Host *, QString & );
-   bool                          createBuffer( Host *, QString & );
-   bool                          showWindow( Host *, QString & );
-   bool                          hideWindow( Host *, QString & );
-   bool                          paste( Host *, QString & );
-   bool                          closeWindow( Host *, QString & );
-   bool                          resizeWindow( Host *, QString &, int, int );
-   bool                          clearWindow( Host *, QString & );
-   bool                          pasteWindow( Host * pHost, QString & name );
-   bool                          setBackgroundColor( Host *, QString & name, int r, int g, int b, int alpha );
-   bool                          setBackgroundImage( Host *, QString & name, QString & path );
-   bool                          setTextFormat( Host *, QString & name, int, int, int, int, int, int, bool, bool, bool );
-   bool                          setLabelClickCallback( Host *, QString &, QString &, TEvent * );
-   bool                          setLabelOnEnter( Host *, QString &, QString &, TEvent * );
-   bool                          setLabelOnLeave( Host *, QString &, QString &, TEvent * );
-   bool                          moveWindow( Host *, QString & name, int, int );
-   void                          deleteLine( Host *, QString & name );
-   void                          insertText( Host *, QString & name, QString );
-   void                          replace( Host *, QString & name, QString );
-   int                           selectString( Host *, QString & name, QString what, int );
-   int                           selectSection( Host *, QString & name, int, int );
-   void                          setBold( Host *, QString & name, bool );
-   void                          setLink( Host * pHost, QString & name, QString & linkText, QStringList & linkFunction, QStringList & );
-   void                          setItalics( Host *, QString & name, bool );
-   void                          setUnderline( Host *, QString & name, bool );
-   void                          setFgColor( Host *, QString & name, int, int, int );
-   void                          setBgColor( Host *, QString & name, int, int, int );
-   bool                          userWindowLineWrap( Host * pHost, QString & name, bool on );
-   QString                       readProfileData( QString profile, QString item );
-   bool                          setWindowWrap( Host * pHost, QString & name, int & wrap );
-   bool                          setWindowWrapIndent( Host * pHost, QString & name, int & wrap );
-   bool                          copy( Host * pHost, QString & name );
-   bool                          moveCursorEnd( Host *, QString & );
-   bool                          moveCursor( Host *, QString &, int, int );
-   int                           getLastLineNumber( Host *, QString & );
-   void                          readSettings();
-   void                          writeSettings();
-   void                          showUnzipProgress( QString txt );
-   bool                          openWebPage(QString path);
-   void                          processEventLoopHack();
-   static TConsole *             mpDebugConsole;
-   static QMainWindow *          mpDebugArea;
-   static bool                   debugMode;
-   QMap<Host *, TConsole *>     mConsoleMap;
-   QMap<Host *, QMap<QString, TConsole * > > mHostConsoleMap;
-   QMap<Host *, QMap<QString, TLabel * > > mHostLabelMap;
-   QIcon *                       testicon;
-   bool                          mShowMenuBar;
-   bool                          mShowToolbar;
-   bool                          isGoingDown() { return mIsGoingDown; }
-   int                           mMainIconSize;
-   int                           mTEFolderIconSize;
-   void                          setIcoSize( int s );
-   void                          replayStart();
-   bool                          setConsoleBufferSize( Host * pHost, QString & name, int x1, int y1 );
-   void                          replayOver();
-   void                          showEvent( QShowEvent * event );
-   void                          hideEvent( QHideEvent * event );
-   bool                          resetFormat( Host *, QString & name );
-   bool                          moduleTableVisible();
-   bool                          mWindowMinimized;
-   //QString                       readProfileData( QString profile, QString item );
-   void                          doAutoLogin( QString & );
-   void                          deselect( Host * pHost, QString & name );
-   void                          stopSounds();
-   void                          playSound( QString s );
-   QString                      getSystemLuaPath() { return mSystemLuaFilePath; }
-   QTime                         mReplayTime;
-   int                           mReplaySpeed;
-   QToolBar *                    mpMainToolBar;
-   QMap<QTimer *, TTimer *>      mTimerMap;
-   dlgIRC *                      mpIRC;
-   QString                       version;
-   Host *                        mpCurrentActiveHost;
-   bool                          mAutolog;
-   QString                       mIrcNick;
-   QMediaPlayer *                mpMusicBox1;
-   QMediaPlayer *                mpMusicBox2;
-   QMediaPlayer *                mpMusicBox3;
-   QMediaPlayer *                mpMusicBox4;
-   QTabBar *                     mpTabBar;
-   QStringList                   packagesToInstallList;
+    static mudlet *             self();
+    void                        addSubWindow(TConsole* p);
+    int                         getColumnNumber( Host * pHost, QString & name );
+    int                         getLineNumber( Host * pHost, QString & name );
+    void                        printSystemMessage( Host * pH, QString & s );
+    void                        print( Host *, QString & );
+    void                        addConsoleForNewHost( Host * pH );
+    void                        disableToolbarButtons();
+    void                        enableToolbarButtons();
+    Host *                      getActiveHost();
+    void                        registerTimer( TTimer *, QTimer * );
+    void                        unregisterTimer( QTimer * );
+    bool                        openWindow( Host *, QString & );
+    bool                        createMiniConsole( Host *, QString &, int, int, int, int );
+    bool                        createLabel( Host *, QString &, int, int, int, int, bool );
+    bool                        echoWindow( Host *, QString &, QString & );
+    bool                        echoLink( Host * pHost, QString & name, QString & text, QStringList &, QStringList &, bool customFormat=false );
+    void                        insertLink( Host *, QString &, QString, QStringList &, QStringList &, bool customFormat=false );
+    bool                        appendBuffer( Host *, QString & );
+    bool                        createBuffer( Host *, QString & );
+    bool                        showWindow( Host *, QString & );
+    bool                        hideWindow( Host *, QString & );
+    bool                        paste( Host *, QString & );
+    bool                        closeWindow( Host *, QString & );
+    bool                        resizeWindow( Host *, QString &, int, int );
+    bool                        clearWindow( Host *, QString & );
+    bool                        pasteWindow( Host * pHost, QString & name );
+    bool                        setBackgroundColor( Host *, QString & name, int r, int g, int b, int alpha );
+    bool                        setBackgroundImage( Host *, QString & name, QString & path );
+    bool                        setTextFormat( Host *, QString & name, int, int, int, int, int, int, bool, bool, bool );
+    bool                        setLabelClickCallback( Host *, QString &, QString &, TEvent * );
+    bool                        setLabelOnEnter( Host *, QString &, QString &, TEvent * );
+    bool                        setLabelOnLeave( Host *, QString &, QString &, TEvent * );
+    bool                        moveWindow( Host *, QString & name, int, int );
+    void                        deleteLine( Host *, QString & name );
+    void                        insertText( Host *, QString & name, QString );
+    void                        replace( Host *, QString & name, QString );
+    int                         selectString( Host *, QString & name, QString what, int );
+    int                         selectSection( Host *, QString & name, int, int );
+    void                        setBold( Host *, QString & name, bool );
+    void                        setLink( Host * pHost, QString & name, QString & linkText, QStringList & linkFunction, QStringList & );
+    void                        setItalics( Host *, QString & name, bool );
+    void                        setUnderline( Host *, QString & name, bool );
+    void                        setFgColor( Host *, QString & name, int, int, int );
+    void                        setBgColor( Host *, QString & name, int, int, int );
+    bool                        userWindowLineWrap( Host * pHost, QString & name, bool on );
+    QString                     readProfileData( QString profile, QString item );
+    bool                        setWindowWrap( Host * pHost, QString & name, int & wrap );
+    bool                        setWindowWrapIndent( Host * pHost, QString & name, int & wrap );
+    bool                        copy( Host * pHost, QString & name );
+    bool                        moveCursorEnd( Host *, QString & );
+    bool                        moveCursor( Host *, QString &, int, int );
+    int                         getLastLineNumber( Host *, QString & );
+    void                        readSettings();
+    void                        writeSettings();
+    void                        showUnzipProgress( QString txt );
+    bool                        openWebPage(QString path);
+    void                        processEventLoopHack();
+    void                        setIcoSize( int s );
+    void                        replayStart();
+    bool                        setConsoleBufferSize( Host * pHost, QString & name, int x1, int y1 );
+    void                        replayOver();
+    void                        showEvent( QShowEvent * event );
+    void                        hideEvent( QHideEvent * event );
+    bool                        resetFormat( Host *, QString & name );
+    bool                        isGoingDown() { return mIsGoingDown; }
+    bool                        moduleTableVisible();
+    void                        doAutoLogin( QString & );
+    void                        deselect( Host * pHost, QString & name );
+    void                        stopSounds();
+    void                        playSound( QString s );
+    QString                     getSystemLuaPath();
 
+    static TConsole *           mpDebugConsole;
+    static QMainWindow *        mpDebugArea;
+    static bool                 debugMode;
+    QMap<Host *, TConsole *>    mConsoleMap;
+    QMap<Host *, QMap<QString, TConsole * > > mHostConsoleMap;
+    QMap<Host *, QMap<QString, TLabel * > > mHostLabelMap;
+    QIcon *                     testicon;
+    bool                        mShowMenuBar;
+    bool                        mShowToolbar;
+    int                         mMainIconSize;
+    int                         mTEFolderIconSize;
+    bool                        mWindowMinimized;
+    //QString                     readProfileData( QString profile, QString item );
+    QTime                       mReplayTime;
+    int                         mReplaySpeed;
+    QToolBar *                  mpMainToolBar;
+    QMap<QTimer *, TTimer *>    mTimerMap;
+    dlgIRC *                    mpIRC;
+    QString                     version;
+    Host *                      mpCurrentActiveHost;
+    bool                        mAutolog;
+    QString                     mIrcNick;
+    QMediaPlayer *              mpMusicBox1;
+    QMediaPlayer *              mpMusicBox2;
+    QMediaPlayer *              mpMusicBox3;
+    QMediaPlayer *              mpMusicBox4;
+    QTabBar *                   mpTabBar;
+    QStringList                 packagesToInstallList;
+
+
+/* DEBUGCONTROLS 1A - Application wide debug variables declarations
+ * Variables for runtime configuration of development/debug feature controls.
+ *
+ * Please use a "mDebug_" prefix - so others can search for where they are used
+ * 8-)!
+ * From SlySven
+ */
+    bool                        mDebug_forceSourceLuaFilesUsage;
+
+/*
+ *
+ *
+ * From Heiko
+ */
+
+/*
+ *
+ *
+ * From Valdim
+ */
+
+/*
+ *
+ *
+ * From Chris
+ */
+
+/*
+ *
+ *
+ * From Others(?)
+ */
+
+/*
+ * End of Application wide debug variables declarations
+ */
 
 
 public slots:
+   void                         processEventLoopHack_timerRun();
+   void                         slot_mapper();
+   void                         slot_replayTimeChanged();
+   void                         slot_replaySpeedUp();
+   void                         slot_replaySpeedDown();
+   void                         toggleFullScreenView();
+   void                         slot_userToolBar_orientation_changed(Qt::Orientation);
+   void                         slot_show_about_dialog();
+   void                         slot_show_help_dialog_video();
+   void                         slot_show_help_dialog_forum();
+   void                         slot_show_help_dialog_irc();
+   void                         slot_show_help_dialog_download();
+   void                         slot_open_mappingscripts_page();
+   void                         slot_module_clicked(QTableWidgetItem*);
+   void                         slot_module_changed(QTableWidgetItem*);
+   void                         slot_multi_view();
+   void                         slot_stopAllTriggers();
+   void                         slot_userToolBar_hovered( QAction* pA );
+   void                         slot_connection_dlg_finnished( QString profile, int historyVersion );
+   void                         slot_timer_fires();
+   void                         slot_send_login();
+   void                         slot_send_pass();
+   void                         slot_replay();
+   void                         slot_disconnect();
+   void                         slot_notes();
+   void                         slot_reconnect();
+   void                         slot_close_profile_requested(int);
+   void                         startAutoLogin();
+   void                         slot_irc();
+   void                         slot_uninstall_package();
+   void                         slot_install_package();
+   void                         slot_package_manager();
+   void                         slot_package_exporter();
+   void                         slot_uninstall_module();
+   void                         slot_install_module();
+   void                         slot_module_manager();
+   void                         layoutModules();
+   void                         slot_help_module();
 
-   void                          processEventLoopHack_timerRun();
-   void                          slot_mapper();
-   void                          slot_replayTimeChanged();
-   void                          slot_replaySpeedUp();
-   void                          slot_replaySpeedDown();
-   void                          toggleFullScreenView();
-   void                          slot_userToolBar_orientation_changed(Qt::Orientation);
-   void                          slot_show_about_dialog();
-   void                          slot_show_help_dialog_video();
-   void                          slot_show_help_dialog_forum();
-   void                          slot_show_help_dialog_irc();
-   void                          slot_show_help_dialog_download();
-   void                          slot_open_mappingscripts_page();
-   void                          slot_module_clicked(QTableWidgetItem*);
-   void                          slot_module_changed(QTableWidgetItem*);
-   void                          slot_multi_view();
-   void                          slot_stopAllTriggers();
-   void                          slot_userToolBar_hovered( QAction* pA );
-   void                          slot_connection_dlg_finnished( QString profile, int historyVersion );
-   void                          slot_timer_fires();
-   void                          slot_send_login();
-   void                          slot_send_pass();
-   void                          slot_replay();
-   void                          slot_disconnect();
-   void                          slot_notes();
-   void                          slot_reconnect();
-   void                          slot_close_profile_requested(int);
-   void                          startAutoLogin();
-   void                          slot_irc();
-   void                          slot_uninstall_package();
-   void                          slot_install_package();
-   void                          slot_package_manager();
-   void                          slot_package_exporter();
-   void                          slot_uninstall_module();
-   void                          slot_install_module();
-   void                          slot_module_manager();
-   void                          layoutModules();
-   void                          slot_help_module();
+/* DEBUGCONTROLS 2A - Application wide debug variable control slots declarations
+ * connect SIGNALS from dlgProfilePreferences.cpp to these SLOTS.
+ * From SlySven
+ */
+   void                         slot_setForceSourceLuaFilesUsage( int state );
+
+/*
+ *
+ *
+ * From Heiko
+ */
+
+/*
+ *
+ *
+ * From Valdim
+ */
+
+/*
+ *
+ *
+ * From Chris
+ */
+
+/*
+ *
+ *
+ * From Others(?)
+ */
+
+/*
+ * End of Application wide debug variable control slots declarations
+ */
+
 
 protected:
-
    void                          closeEvent(QCloseEvent *event);
 
-private slots:
 
+private slots:
    void                          slot_close_profile();
    void                          slot_tab_changed( int );
    void                          show_help_dialog();
@@ -221,45 +292,43 @@ private slots:
    void                          show_variable_dialog();
    void                          show_options_dialog();
 
+
 private:
-
-   void                          goingDown() { mIsGoingDown = true; }
-   QMap<QString, TConsole *>         mTabMap;
-   //QTabBar *                     mpTabBar;
-   QWidget *                     mainPane;
-
-   Host *                        mpDefaultHost;
-   QQueue<QString>               tempLoginQueue;
-   QQueue<QString>               tempPassQueue;
-   QQueue<Host *>                tempHostQueue;
-   static                        mudlet * _self;
-   QMap<QString, QDockWidget *>  dockWindowMap;
-   //QMap<QString, TConsole *>     dockWindowConsoleMap;
-   //QMap<QString, TLabel *>>       mLabelMap;
-   QMap<Host *, QToolBar *>      mUserToolbarMap;
-
-
-   QMenu *                       restoreBar;
-   bool                          mIsGoingDown;
-
-   QAction *                     actionReplaySpeedDown;
-   QAction *                     actionReplaySpeedUp;
-   QAction *                     actionReconnect;
-
-   void                          check_for_mappingscript();
-
-   QListWidget *                 packageList;
-   QPushButton *                 uninstallButton;
-   QPushButton *                 installButton;
-
-   QTableWidget *                 moduleTable;
-   QPushButton *                 moduleUninstallButton;
-   QPushButton *                 moduleInstallButton;
-   QPushButton *                 moduleHelpButton;
-
+   void                         goingDown() { mIsGoingDown = true; }
+   void                         check_for_mappingscript();
    void                         setSystemLuaPath();
                                 // Not implimented yet, might be required if option to change this
                                 // put into preferences dialog
+
+   QMap<QString, TConsole *>    mTabMap;
+   //QTabBar *                    mpTabBar;
+   QWidget *                    mainPane;
+
+   Host *                       mpDefaultHost;
+   QQueue<QString>              tempLoginQueue;
+   QQueue<QString>              tempPassQueue;
+   QQueue<Host *>               tempHostQueue;
+   static mudlet *              _self;
+   QMap<QString, QDockWidget *> dockWindowMap;
+   //QMap<QString, TConsole *>    dockWindowConsoleMap;
+   //QMap<QString, TLabel *>>     mLabelMap;
+   QMap<Host *, QToolBar *>     mUserToolbarMap;
+   QMenu *                      restoreBar;
+   bool                         mIsGoingDown;
+
+   QAction *                    actionReplaySpeedDown;
+   QAction *                    actionReplaySpeedUp;
+   QAction *                    actionReconnect;
+
+   QListWidget *                packageList;
+   QPushButton *                uninstallButton;
+   QPushButton *                installButton;
+
+   QTableWidget *               moduleTable;
+   QPushButton *                moduleUninstallButton;
+   QPushButton *                moduleInstallButton;
+   QPushButton *                moduleHelpButton;
+
    QString                      mSystemLuaFilePath;
                                 // Path to where LuaGlobal.lua is, stored in main QSettings "location"
                                 // Ideally an installer program should store the required value there so
@@ -267,14 +336,12 @@ private:
 };
 
 class TConsoleMonitor : public QObject
- {
-     Q_OBJECT
+{
+    Q_OBJECT
 
- protected:
-     bool eventFilter(QObject *obj, QEvent *event);
- };
-
+protected:
+    bool eventFilter(QObject *obj, QEvent *event);
+};
 
 
 #endif
-
