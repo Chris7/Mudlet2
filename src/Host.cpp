@@ -165,7 +165,7 @@ Host::Host( int port, QString hostname, QString login, QString pass, int id )
  *
  * From SlySven
  */
-, mDebug_RoomTransparency ( 0 )
+//, mDebug_RoomTransparency ( 0 )
 
 /*
  *
@@ -331,7 +331,7 @@ Host::Host()
  *
  * From SlySven
  */
-, mDebug_RoomTransparency ( 0 )
+//, mDebug_RoomTransparency ( 0 )
 
 /*
  *
@@ -1452,10 +1452,10 @@ void Host::readPackageConfig( QString luaConfig, QString & packageName )
  *
  * From SlySven
  */
-void Host::slot_setRoomOpacity(int value )
-{
-    mDebug_RoomTransparency = value;
-}
+//void Host::slot_setRoomOpacity(int value )
+//{
+//    mDebug_RoomTransparency = value;
+//}
 
 /*
  *

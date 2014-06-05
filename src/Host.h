@@ -324,7 +324,7 @@ public:
  * 8-)!
  * From SlySven
  */
-    int                mDebug_RoomTransparency;
+//    int                mDebug_RoomTransparency;
 
 /*
  *
@@ -360,7 +360,7 @@ public slots:
  * connect SIGNALS from dlgProfilePreferences.cpp to these SLOTS.
  * From SlySven
  */
-    void               slot_setRoomOpacity( int value );
+//    void               slot_setRoomOpacity( int value );
 
 /*
  *

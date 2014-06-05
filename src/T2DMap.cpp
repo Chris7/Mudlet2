@@ -513,13 +513,6 @@ void T2DMap::paintEvent( QPaintEvent * e )
 
     //mpMap->auditRooms();
 
-    int debug_roomOpacity = 255 - mpHost->mDebug_RoomTransparency;
-    qreal debug_roomOpacityF =  debug_roomOpacity / 255.0;
-    if( debug_roomOpacityF > 1.0 || qFuzzyCompare( debug_roomOpacityF, 1.0 ))
-        debug_roomOpacityF = 1;
-    else if( debug_roomOpacityF < 0.0 || qFuzzyCompare( 1.0 + debug_roomOpacityF, 1.0 ))
-        debug_roomOpacity = 0;
-
     if( mpMap->mapLabels.contains( mAID ) )
     {
         QMapIterator<int, TMapLabel> it(mpMap->mapLabels[mAID]);
@@ -1249,7 +1242,6 @@ void T2DMap::paintEvent( QPaintEvent * e )
             if( ! mpMap->customEnvColors.contains(env) ) break;
             c = mpMap->customEnvColors[env];
         }
-        QColor cr = QColor(c.red(), c.green(), c.blue(), debug_roomOpacity );
         if( ( ( mPick || __Pick )
               && mPHighlight.x() >= dr.x()-(tx*rSize)
               && mPHighlight.x() <= dr.x()+(tx*rSize)
@@ -1264,11 +1256,11 @@ void T2DMap::paintEvent( QPaintEvent * e )
                 float _radius = (0.8*tx)/2;
                 QPointF _center = QPointF(rx,ry);
                 QRadialGradient _gradient(_center,_radius);
-                _gradient.setColorAt(0.95, QColor(255,0,0,150 * debug_roomOpacityF ));
-                _gradient.setColorAt(0.80, QColor(150,100,100,150 * debug_roomOpacityF ));
-                _gradient.setColorAt(0.799,QColor(150,100,100,100 * debug_roomOpacityF ));
-                _gradient.setColorAt(0.7, QColor(255,0,0,200 * debug_roomOpacityF ));
-                _gradient.setColorAt(0, QColor(255,255,255,255 * debug_roomOpacityF ));
+                _gradient.setColorAt(0.95, QColor(255,0,0,150));
+                _gradient.setColorAt(0.80, QColor(150,100,100,150));
+                _gradient.setColorAt(0.799,QColor(150,100,100,100));
+                _gradient.setColorAt(0.7, QColor(255,0,0,200));
+                _gradient.setColorAt(0, QColor(255,255,255,255));
                 QPen myPen(QColor(0,0,0,0));
                 QPainterPath myPath;
                 p.setBrush(_gradient);
@@ -1305,7 +1297,7 @@ void T2DMap::paintEvent( QPaintEvent * e )
                 else
                     _color = ( 6 ) * 254 + _ch;
 
-                p.fillRect( dr, cr );
+                p.fillRect( dr, c );
                 if( mPixMap.contains( _color ) )
                 {
                     QPixmap pix = mPixMap[_color].scaled(dr.width(), dr.height(), Qt::KeepAspectRatio, Qt::SmoothTransformation);
@@ -1319,8 +1311,8 @@ void T2DMap::paintEvent( QPaintEvent * e )
                     float _radius = (rSize*tx)/2;
                     QPointF _center = QPointF(rx,ry);
                     QRadialGradient _gradient(_center,_radius);
-                    _gradient.setColorAt(0.85, cr );
-                    _gradient.setColorAt(0, QColor(255,255,255,debug_roomOpacity));
+                    _gradient.setColorAt(0.85, c);
+                    _gradient.setColorAt(0, QColor(255,255,255,255));
                     QPen myPen(QColor(0,0,0,0));
                     QPainterPath myPath;
                     p.setBrush(_gradient);
@@ -1329,15 +1321,15 @@ void T2DMap::paintEvent( QPaintEvent * e )
                     p.drawPath(myPath);
                 }
                 else
-                    p.fillRect(dr,cr);
+                    p.fillRect(dr,c);
             }
             if( pR->highlight )
             {
                 float _radius = (pR->highlightRadius*tx)/2;
                 QPointF _center = QPointF(rx,ry);
                 QRadialGradient _gradient(_center,_radius);
-                _gradient.setColorAt(0.85, QColor( pR->highlightColor.redF(),  pR->highlightColor.greenF(),  pR->highlightColor.blueF(),  pR->highlightColor.alphaF() * debug_roomOpacityF ) );
-                _gradient.setColorAt(   0, QColor( pR->highlightColor2.redF(), pR->highlightColor2.greenF(), pR->highlightColor2.blueF(), pR->highlightColor2.alphaF() * debug_roomOpacityF ) );
+                _gradient.setColorAt(0.85, pR->highlightColor);
+                _gradient.setColorAt(0, pR->highlightColor2 );
                 QPen myPen(QColor(0,0,0,0));
                 QPainterPath myPath;
                 p.setBrush(_gradient);
@@ -1362,11 +1354,11 @@ void T2DMap::paintEvent( QPaintEvent * e )
                 float _radius = (1.2*tx)/2;
                 QPointF _center = QPointF(rx,ry);
                 QRadialGradient _gradient(_center,_radius);
-                _gradient.setColorAt(0.95, QColor(255,0,0,150 * debug_roomOpacityF));
-                _gradient.setColorAt(0.80, QColor(150,100,100,150 * debug_roomOpacityF));
-                _gradient.setColorAt(0.799,QColor(150,100,100,100 * debug_roomOpacityF));
-                _gradient.setColorAt(0.7, QColor(255,0,0,200 * debug_roomOpacityF));
-                _gradient.setColorAt(0, QColor(255,255,255, debug_roomOpacity));
+                _gradient.setColorAt(0.95, QColor(255,0,0,150));
+                _gradient.setColorAt(0.80, QColor(150,100,100,150));
+                _gradient.setColorAt(0.799,QColor(150,100,100,100));
+                _gradient.setColorAt(0.7, QColor(255,0,0,200));
+                _gradient.setColorAt(0, QColor(255,255,255,255));
                 QPen myPen(QColor(0,0,0,0));
                 QPainterPath myPath;
                 p.setBrush(_gradient);
@@ -1550,11 +1542,11 @@ void T2DMap::paintEvent( QPaintEvent * e )
                     float _radius = (0.8*tx)/2;
                     QPointF _center = QPointF(rx,ry);
                     QRadialGradient _gradient(_center,_radius);
-                    _gradient.setColorAt(0.95, QColor(255,0,0,150 * debug_roomOpacityF));
-                    _gradient.setColorAt(0.80, QColor(150,100,100,150 * debug_roomOpacityF));
-                    _gradient.setColorAt(0.799,QColor(150,100,100,100 * debug_roomOpacityF));
-                    _gradient.setColorAt(0.7, QColor(255,0,0,200 * debug_roomOpacityF));
-                    _gradient.setColorAt(0, QColor(255,255,255, debug_roomOpacity));
+                    _gradient.setColorAt(0.95, QColor(255,0,0,150));
+                    _gradient.setColorAt(0.80, QColor(150,100,100,150));
+                    _gradient.setColorAt(0.799,QColor(150,100,100,100));
+                    _gradient.setColorAt(0.7, QColor(255,0,0,200));
+                    _gradient.setColorAt(0, QColor(255,255,255,255));
                     QPen myPen(QColor(0,0,0,0));
                     QPainterPath myPath;
                     p.setBrush(_gradient);
@@ -1685,11 +1677,11 @@ void T2DMap::paintEvent( QPaintEvent * e )
             float _radius = (1.9*tx)/2;
             QPointF _center = QPointF(px,py);
             QRadialGradient _gradient(_center,_radius);
-            _gradient.setColorAt(0.95, QColor(255,0,0,150 * debug_roomOpacityF));
-            _gradient.setColorAt(0.80, QColor(150,100,100,150 * debug_roomOpacityF));
-            _gradient.setColorAt(0.799,QColor(150,100,100,100 * debug_roomOpacityF));
-            _gradient.setColorAt(0.7, QColor(255,0,0,200 * debug_roomOpacityF));
-            _gradient.setColorAt(0, QColor(255,255,255,debug_roomOpacity));
+            _gradient.setColorAt(0.95, QColor(255,0,0,150));
+            _gradient.setColorAt(0.80, QColor(150,100,100,150));
+            _gradient.setColorAt(0.799,QColor(150,100,100,100));
+            _gradient.setColorAt(0.7, QColor(255,0,0,200));
+            _gradient.setColorAt(0, QColor(255,255,255,255));
             QPen myPen(QColor(0,0,0,0));
             QPainterPath myPath;
             p.setBrush(_gradient);
@@ -1703,12 +1695,12 @@ void T2DMap::paintEvent( QPaintEvent * e )
             float _radius = (1.9*tx)/2;
             QPointF _center = QPointF(px,py);
             QRadialGradient _gradient(_center,_radius);
-            _gradient.setColorAt(0.95, QColor(255,0,0,150 * debug_roomOpacityF));
-            _gradient.setColorAt(0.80, QColor(150,100,100,150 * debug_roomOpacityF));
-            _gradient.setColorAt(0.799,QColor(150,100,100,100 * debug_roomOpacityF));
-            _gradient.setColorAt(0.3,QColor(150,150,150,100 * debug_roomOpacityF));
-            _gradient.setColorAt(0.1, QColor(255,255,255,100 * debug_roomOpacityF));
-            _gradient.setColorAt(0, QColor(255,255,255,debug_roomOpacity));
+            _gradient.setColorAt(0.95, QColor(255,0,0,150));
+            _gradient.setColorAt(0.80, QColor(150,100,100,150));
+            _gradient.setColorAt(0.799,QColor(150,100,100,100));
+            _gradient.setColorAt(0.3,QColor(150,150,150,100));
+            _gradient.setColorAt(0.1, QColor(255,255,255,100));
+            _gradient.setColorAt(0, QColor(255,255,255,255));
             QPen myPen(QColor(0,0,0,0));
             QPainterPath myPath;
             p.setBrush(_gradient);

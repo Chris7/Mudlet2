@@ -57,9 +57,9 @@ Q_OBJECT
 public:
 
                                 mudlet();
-                                ~mudlet();
+                               ~mudlet();
     static mudlet *             self();
-    void                        addSubWindow(TConsole* p);
+    void                        addSubWindow( TConsole * p );
     int                         getColumnNumber( Host * pHost, QString & name );
     int                         getLineNumber( Host * pHost, QString & name );
     void                        printSystemMessage( Host * pH, QString & s );
@@ -114,7 +114,7 @@ public:
     void                        readSettings();
     void                        writeSettings();
     void                        showUnzipProgress( QString txt );
-    bool                        openWebPage(QString path);
+    bool                        openWebPage( QString path );
     void                        processEventLoopHack();
     void                        setIcoSize( int s );
     void                        replayStart();
@@ -206,15 +206,15 @@ public slots:
    void                         slot_replaySpeedUp();
    void                         slot_replaySpeedDown();
    void                         toggleFullScreenView();
-   void                         slot_userToolBar_orientation_changed(Qt::Orientation);
+   void                         slot_userToolBar_orientation_changed( Qt::Orientation );
    void                         slot_show_about_dialog();
    void                         slot_show_help_dialog_video();
    void                         slot_show_help_dialog_forum();
    void                         slot_show_help_dialog_irc();
    void                         slot_show_help_dialog_download();
    void                         slot_open_mappingscripts_page();
-   void                         slot_module_clicked(QTableWidgetItem*);
-   void                         slot_module_changed(QTableWidgetItem*);
+   void                         slot_module_clicked( QTableWidgetItem * );
+   void                         slot_module_changed( QTableWidgetItem * );
    void                         slot_multi_view();
    void                         slot_stopAllTriggers();
    void                         slot_userToolBar_hovered( QAction* pA );
@@ -226,7 +226,7 @@ public slots:
    void                         slot_disconnect();
    void                         slot_notes();
    void                         slot_reconnect();
-   void                         slot_close_profile_requested(int);
+   void                         slot_close_profile_requested( int );
    void                         startAutoLogin();
    void                         slot_irc();
    void                         slot_uninstall_package();
@@ -275,7 +275,7 @@ public slots:
 
 
 protected:
-   void                          closeEvent(QCloseEvent *event);
+   void                          closeEvent( QCloseEvent * event );
 
 
 private slots:
@@ -340,7 +340,7 @@ class TConsoleMonitor : public QObject
     Q_OBJECT
 
 protected:
-    bool eventFilter(QObject *obj, QEvent *event);
+    bool eventFilter( QObject * obj, QEvent * event );
 };
 
 

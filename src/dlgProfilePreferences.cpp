@@ -364,36 +364,38 @@ dlgProfilePreferences::dlgProfilePreferences( QWidget * pF, Host * pH )
  *
  *  From SlySven:
  */
-    QHBoxLayout * horizontalLayout_RoomOpacity = new QHBoxLayout( 0 );
-    horizontalLayout_RoomOpacity->setAlignment(Qt::AlignLeft);
-    QLabel * label_RoomOpacity = new QLabel("Reduce Room Symbol visibility on 2D map.", 0 );
-    label_RoomOpacity->setTextFormat(Qt::PlainText);
-    label_RoomOpacity->adjustSize();
-    QSpinBox * spinBox_RoomOpacity = new QSpinBox( 0 );
-    spinBox_RoomOpacity->setStatusTip("Enables checking of exit line detail close to or under room symbol in 2D maps.");
-    spinBox_RoomOpacity->setRange(0, 255);
-    spinBox_RoomOpacity->setSingleStep(16);
-    spinBox_RoomOpacity->setSpecialValueText("Normal");
-    spinBox_RoomOpacity->setValue( mpHost->mDebug_RoomTransparency );
-    connect(spinBox_RoomOpacity, SIGNAL(valueChanged(int)), mpHost, SLOT( slot_setRoomOpacity(int) ));
-    spinBox_RoomOpacity->adjustSize();
-    horizontalLayout_RoomOpacity->addWidget(spinBox_RoomOpacity);
-    horizontalLayout_RoomOpacity->addWidget(label_RoomOpacity);
-    verticalLayout_debugOptions->addLayout(horizontalLayout_RoomOpacity);
+//    QHBoxLayout * horizontalLayout_RoomOpacity = new QHBoxLayout( 0 );
+//    horizontalLayout_RoomOpacity->setAlignment( Qt::AlignLeft );
+//    QLabel * label_RoomOpacity = new QLabel( tr( "Reduce Room Symbol visibility on 2D map." ), 0 );
+//    label_RoomOpacity->setTextFormat( Qt::PlainText );
+//    label_RoomOpacity->adjustSize();
+//    QSpinBox * spinBox_RoomOpacity = new QSpinBox( 0 );
+//    spinBox_RoomOpacity->setToolTip( tr( "Enables checking of exit line detail close to or under room symbol in 2D maps." ) );
+//    spinBox_RoomOpacity->setRange( 0, 255 );
+//    spinBox_RoomOpacity->setSingleStep( 16 );
+//    spinBox_RoomOpacity->setSpecialValueText( tr( "Normal" ) );
+//    spinBox_RoomOpacity->setValue( mpHost->mDebug_RoomTransparency );
+//    connect( spinBox_RoomOpacity, SIGNAL( valueChanged( int ) ), mpHost, SLOT( slot_setRoomOpacity( int ) ) );
+//    spinBox_RoomOpacity->adjustSize();
+//    horizontalLayout_RoomOpacity->addWidget( spinBox_RoomOpacity );
+//    horizontalLayout_RoomOpacity->addWidget( label_RoomOpacity );
+//    verticalLayout_debugOptions->addLayout( horizontalLayout_RoomOpacity );
 
     QHBoxLayout * horizontalLayout_ForceSourceLuaFilesUsage = new QHBoxLayout( 0 );
-    horizontalLayout_ForceSourceLuaFilesUsage->setAlignment(Qt::AlignLeft);
-    QLabel * label_ForceSourceLuaFilesUsage = new QLabel("Use Mudlet Lua files from build (./src/mudlet-lua/lua) location.", 0 );
-    label_ForceSourceLuaFilesUsage->setTextFormat(Qt::PlainText);
+    horizontalLayout_ForceSourceLuaFilesUsage->setAlignment( Qt::AlignLeft );
+    QLabel * label_ForceSourceLuaFilesUsage = new QLabel( tr( "Use Mudlet Lua files from build (%1) location." )
+                                                          .arg ( QDir::toNativeSeparators( QStringLiteral( "./../src/mudlet-lua/lua" ) ) )
+                                                          , 0 );
+    label_ForceSourceLuaFilesUsage->setTextFormat( Qt::PlainText );
     label_ForceSourceLuaFilesUsage->adjustSize();
     QCheckBox * checkBox_ForceSourceLuaFilesUsage = new QCheckBox( 0 );
-    checkBox_ForceSourceLuaFilesUsage->setStatusTip("Ignore the location stored in the (per user) Mudlet config file for following profile connections.");
+    checkBox_ForceSourceLuaFilesUsage->setToolTip( tr( "Ignore the location stored in the (per user) Mudlet config file for following profile connections." ) );
     checkBox_ForceSourceLuaFilesUsage->setChecked( mudlet::self()->mDebug_forceSourceLuaFilesUsage );
-    connect(checkBox_ForceSourceLuaFilesUsage, SIGNAL(stateChanged(int)), mudlet::self(), SLOT( slot_setForceSourceLuaFilesUsage(int) ));
+    connect( checkBox_ForceSourceLuaFilesUsage, SIGNAL( stateChanged( int ) ), mudlet::self(), SLOT( slot_setForceSourceLuaFilesUsage( int ) ) );
     checkBox_ForceSourceLuaFilesUsage->adjustSize();
-    horizontalLayout_ForceSourceLuaFilesUsage->addWidget(checkBox_ForceSourceLuaFilesUsage);
-    horizontalLayout_ForceSourceLuaFilesUsage->addWidget(label_ForceSourceLuaFilesUsage);
-    verticalLayout_debugOptions->addLayout(horizontalLayout_ForceSourceLuaFilesUsage);
+    horizontalLayout_ForceSourceLuaFilesUsage->addWidget( checkBox_ForceSourceLuaFilesUsage );
+    horizontalLayout_ForceSourceLuaFilesUsage->addWidget( label_ForceSourceLuaFilesUsage );
+    verticalLayout_debugOptions->addLayout( horizontalLayout_ForceSourceLuaFilesUsage );
 /*
  *
  *  From Heiko
@@ -421,8 +423,8 @@ dlgProfilePreferences::dlgProfilePreferences( QWidget * pF, Host * pH )
 /*  End of Insert debug variable controls
  *  Now add them all into layout:
  */
-    verticalLayout_debugOptions->setAlignment(Qt::AlignTop);
-    groupBox_Debug->setLayout(verticalLayout_debugOptions);
+    verticalLayout_debugOptions->setAlignment( Qt::AlignTop );
+    groupBox_Debug->setLayout( verticalLayout_debugOptions );
 
     Host * pHost = mpHost;
     if( pHost )

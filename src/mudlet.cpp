@@ -2595,7 +2595,7 @@ QString mudlet::getSystemLuaPath()
  */
 void mudlet::slot_setForceSourceLuaFilesUsage( int state )
 {
-    mDebug_forceSourceLuaFilesUsage = (state==Qt::Checked);
+    mDebug_forceSourceLuaFilesUsage = ( state == Qt::Checked );
 }
 
 /*

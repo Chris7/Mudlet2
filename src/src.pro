@@ -1,10 +1,3 @@
-################################################################################
-# MERGING INSTRUCTIONS: to merge in "mudletDev_customExitsFixAndEnhance" as    #
-# (pull request #32 to www.github.com/Chris7/Mudlet2/mudletDev) after this has #
-# been done as pull request #31                                                #
-# Take ALL changes from this side                                              #
-# THEN add in "custom_exit_properties.ui" onto end of "FORMS=" from other side #
-################################################################################
 QMAKE_CXXFLAGS_RELEASE += -O3 -Wno-deprecated-declarations -Wno-unused-local-typedefs -Wno-unused-parameter
 QMAKE_CXXFLAGS_DEBUG += -g -Wno-deprecated-declarations -Wno-unused-local-typedefs -Wno-unused-parameter
 #MOC_DIR = ./tmp
