@@ -1,18 +1,26 @@
 
-project(mudlet)
+PROJECT(mudlet)
 
-cmake_minimum_required(VERSION 2.8.11)
-
-IF(WIN32)
-    set(APP_TARGET mudlet.exe)
-ELSEIF(APPLE)
-    set(APP_TARGET Mudlet)
+IF(MSVC)
+  CMAKE_MINIMUM_REQUIRED(VERSION 2.8.11)
 ELSE()
-    set(APP_TARGET mudlet)
+  CMAKE_MINIMUM_REQUIRED(VERSION 2.8.9)
 ENDIF()
 
-set(APP_VERSION 3.0.1)
-set(APP_BUILD -rc1-development)
+IF(POLICY CMP0020)
+  CMAKE_POLICY(SET CMP0020 NEW)
+ENDIF()
+
+IF(WIN32)
+    SET(APP_TARGET mudlet.exe)
+ELSEIF(APPLE)
+    SET(APP_TARGET Mudlet)
+ELSE()
+    SET(APP_TARGET mudlet)
+ENDIF()
+
+SET(APP_VERSION 3.0.1)
+SET(APP_BUILD -rc1-development)
 # APP_BUILD should only be empty/null in official "release" builds,
 # developers may like to set it to their user and branch names to make it easier
 # to tell different builds apart!
@@ -27,5 +35,5 @@ set(APP_BUILD -rc1-development)
 # assigned to the "VERSION" and "BUILD" variables in the native qmake project file,
 # i.e. ./src/src.pro
 
-add_subdirectory(src)
+ADD_SUBDIRECTORY(src)
 
