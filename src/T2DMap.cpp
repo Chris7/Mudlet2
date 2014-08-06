@@ -37,47 +37,6 @@
 #include "Host.h"
 #include "dlgRoomExits.h"
 
-T2DMap::T2DMap()
-: mMultiSelectionListWidget(this)
-{
-    mMultiSelectionListWidget.setHeaderLabel("Room Selection");
-    mMultiSelectionListWidget.setColumnCount(1);
-    mMultiSelectionListWidget.resize(100,180);
-    mMultiSelectionListWidget.move(1,1);
-    mMultiSelectionListWidget.hide();
-
-    //connect(&mMultiSelectionListWidget, SIGNAL(itemSelectionChanged()), this, SLOT(slot_roomSelectionChanged()));
-    mLabelHilite = false;
-    xzoom = 30;
-    yzoom = 30;
-    gzoom = 20;
-    mPick = false;
-    mTarget = 0;
-    //mRoomSelection = 0;
-    mStartSpeedWalk = false;
-    mRoomBeingMoved = false;
-    mPHighlightMove = QPoint(width()/2, height()/2);
-    mNewMoveAction = false;
-    eSize = 3.0;
-    rSize = 0.5;
-    mShiftMode = false;
-    mShowInfo = true;
-    mBubbleMode = false;
-    mMapperUseAntiAlias = true;
-    mMoveLabel = false;
-    mCustomLineSelectedRoom = 0;
-    mCustomLineSelectedExit = "";
-    mCustomLineSelectedPoint = -1;
-    mCustomLinesRoomFrom = 0;
-    mCustomLinesRoomTo = 0;
-    mMultiSelectionListWidget.setRootIsDecorated(false);
-    mMultiSelectionListWidget.setColumnWidth(0,90);
-    mSizeLabel = false;
-    gridMapSizeChange = true;
-    isCenterViewCall = false;
-    //setFocusPolicy( Qt::ClickFocus);
-}
-
 T2DMap::T2DMap(QWidget * parent)
 : QWidget(parent)
 , mMultiSelectionListWidget(this)
@@ -2562,7 +2521,7 @@ void T2DMap::slot_customLineProperties()
                 qWarning("T2DMap::slot_customLineProperties() ERRROR: failed to create the dialog!");
                 return;
             }
-            d->setWindowIcon(QIcon(":/icons/mudlet_custom_exit_properties.png"));
+            d->setWindowIcon( QIcon( QStringLiteral( ":/icons/mudlet_custom_exit_properties.png" ) ) );
             QLineEdit * le_toId = d->findChild<QLineEdit*>("toId");
             QLineEdit * le_fromId = d->findChild<QLineEdit*>("fromId");
             QLineEdit * le_cmd = d->findChild<QLineEdit*>("cmd");
@@ -3654,7 +3613,7 @@ void T2DMap::slot_setCustomLine()
     if( ! d )
         return;
     mpCustomLinesDialog = d;
-    mpCustomLinesDialog->setWindowIcon(QIcon(":/icons/mudlet_custom_exit.png"));
+    mpCustomLinesDialog->setWindowIcon( QIcon( QStringLiteral( ":/icons/mudlet_custom_exit.png" ) ) );
     TRoom * pR = mpMap->mpRoomDB->getRoom(mMultiSelectionList[0]);
     if( !pR )
         return;
