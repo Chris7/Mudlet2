@@ -112,7 +112,9 @@ TConsole::TConsole( Host * pH, bool isDebugConsole, QWidget * parent )
 
     if( mIsDebugConsole )
     {
-        setWindowTitle("Debug Console");
+        setWindowTitle( tr( "Debug Console" ) );
+        // Probably will not show up as this is used inside a QMainWindow widget
+        // which has it's own title and icon set.
         mWrapAt = 50;
         mIsSubConsole = false;
         mStandardFormat.bgR = mBgColor.red();
@@ -127,7 +129,7 @@ TConsole::TConsole( Host * pH, bool isDebugConsole, QWidget * parent )
     }
     else
     {
-        setWindowTitle("keine Debug Console");
+        setWindowTitle( tr( "Non Debug Console" ) );
         if( parent )
         {
             mIsSubConsole = true;
